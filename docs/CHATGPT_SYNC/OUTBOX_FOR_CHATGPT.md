@@ -2,78 +2,103 @@
 
 ## Summary
 
-Issue #6 verification was attempted from a fresh GitHub source copy. The web MVP now typechecks, builds, starts locally, and serves `/` plus `/dashboard`. A Next.js config fix was needed because `output: 'standalone'` caused Windows/OneDrive symlink permission failures during `next build`.
+Issue #9 verified the NeoAgro FastAPI API on a clean Python 3.12 GitHub Actions runner. The API installed, started on port 8000, returned `ok` from `/health`, and returned SolarHub scenario data from `/api/v1/dashboard/summary`.
 
-The API could not be booted in this local Codex environment because Python dependency installation was blocked before project code ran.
+Issue #7 was not started.
 
 ## Exact Path Used
 
-`C:\Users\waelk\OneDrive\Desktop\start up\Neohaven\issue-6-neoagro-platform-main\neoagro-platform-main`
+GitHub Actions clean runner from PR #10:
+
+- Repository: `wisemaiarservices-debug/neoagro-platform`
+- Branch: `codex/issue-9-api-python312`
+- Workflow: `NeoAgro CI`
+- Job: `api-smoke`
+- Python: `actions/setup-python@v5` with `python-version: '3.12'`
 
 ## Files Changed
 
-- `apps/web/next.config.mjs`
+- `.github/workflows/ci.yml`
+- `scripts/smoke-api.ps1`
 - `docs/CHATGPT_SYNC/OUTBOX_FOR_CHATGPT.md`
 
 ## Commands Run
 
-- `git clone https://github.com/wisemaiarservices-debug/neoagro-platform.git issue-6-neoagro-platform-fresh`
-- `Invoke-WebRequest -Uri "https://github.com/wisemaiarservices-debug/neoagro-platform/archive/refs/heads/main.zip" -OutFile "issue-6-neoagro-platform-main.zip"`
-- `Expand-Archive -LiteralPath "issue-6-neoagro-platform-main.zip" -DestinationPath "issue-6-neoagro-platform-main" -Force`
-- `Get-Content AGENTS.md`
-- `Get-Content docs/GITHUB_FIRST_MVP_RUNBOOK.md`
-- `python -m venv .venv`
-- `python -m ensurepip --upgrade`
-- `pnpm install`
-- `pnpm install --config.strict-ssl=false`
-- `pnpm run typecheck`
-- `pnpm run build`
-- `pnpm run dev`
-- `Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:3000/"`
-- `Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:3000/dashboard"`
+GitHub Actions API job:
+
+- `python -m pip install --upgrade pip`
+- `pip install -r apps/api/requirements.txt`
+- `python -m uvicorn main:app --host 127.0.0.1 --port 8000`
+- `curl -fsS http://127.0.0.1:8000/health`
+- Python assertions against `/health`
+- Python assertions against `/api/v1/dashboard/summary`
+
+GitHub/Codex coordination:
+
+- Read Issue #9.
+- Read `AGENTS.md`.
+- Read `docs/GITHUB_FIRST_MVP_RUNBOOK.md`.
+- Read `apps/api/main.py`.
+- Read `apps/api/requirements.txt`.
+- Created branch `codex/issue-9-api-python312`.
+- Opened PR #10.
+- Watched GitHub Actions job `api-smoke`.
 
 ## Install Result
 
-API install failed because the available bundled Python failed during `ensurepip` with `OPENSSL_Uplink ... no OPENSSL_Applink`.
+Passed on clean Python 3.12 GitHub Actions runner.
 
-Web install initially failed with `UNABLE_TO_VERIFY_LEAF_SIGNATURE` against the npm registry. A one-time local verification workaround, `pnpm install --config.strict-ssl=false`, succeeded.
+Installed from `apps/api/requirements.txt`:
+
+- `fastapi==0.115.6`
+- `uvicorn[standard]==0.34.0`
+- `pydantic==2.10.4`
+- `python-dotenv==1.0.1`
 
 ## API Boot Result
 
-Not booted. FastAPI was not installed, and Python/pip bootstrap failed before API dependencies could be installed.
+Passed.
 
-## Web Boot Result
+- API started with `python -m uvicorn main:app --host 127.0.0.1 --port 8000`.
+- Health wait loop reached `/health` successfully.
 
-Passed after the Next config fix.
+## API Endpoint Result
 
-- `/` returned HTTP 200.
-- `/dashboard` returned HTTP 200.
-- Dashboard response contained `Heatwave agrivoltaic optimization`.
+Passed.
+
+Verified `/health`:
+
+- HTTP 200
+- `status == "ok"`
+- `service == "neoagro-api"`
+
+Verified `/api/v1/dashboard/summary`:
+
+- HTTP 200
+- `scenario == "Heatwave agrivoltaic optimization"`
+- `site.status == "demo_ready"`
+- At least 6 KPIs returned.
+- At least 2 recommendations returned.
 
 ## Docker Result
 
-Not run. Docker was not available in the local shell.
+Not run locally. Docker was not available in the local shell during this Codex session.
 
 ## Smoke Test Result
 
-Passed for web routes.
+Passed for API in GitHub Actions clean Python 3.12 environment.
 
-Blocked for API routes:
-
-- `/health`
-- `/api/v1/dashboard/summary`
+The PowerShell smoke script was also strengthened to assert both `/health` and `/api/v1/dashboard/summary` for future local Windows checks.
 
 ## Remaining Blockers
 
-- Local Git executable on PATH was missing; bundled Git could not clone over HTTPS because `remote-https` helper was unavailable. A fresh GitHub source archive was used instead.
-- Python environment cannot install API dependencies due bundled Python `ensurepip` OpenSSL failure.
-- npm registry certificate verification failed unless strict SSL was disabled for the local install.
-- `next@14.2.23` is deprecated and pnpm reported a security advisory warning.
+- Docker Compose verification remains untested in this session because Docker was unavailable locally.
+- Local Windows shell still lacks a normal Git/Python/pip setup, so the clean verification source of truth for Issue #9 is GitHub Actions.
 
 ## Next Recommended Task
 
-Verify the API in GitHub Actions or another machine with working Python/pip, then upgrade Next.js to a patched version and rerun full API plus web smoke tests.
+Merge PR #10 after review, then optionally run Docker Compose verification on a machine with Docker available.
 
 ## Suggested Commit Message
 
-`fix(web): avoid standalone symlink build failure on Windows`
+`ci(api): verify running API endpoints on Python 3.12`
