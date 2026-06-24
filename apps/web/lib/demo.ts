@@ -1,3 +1,5 @@
+import { getNovaCoreWorkflow, novaCoreFallbackWorkflow, type NovaCoreWorkflow } from './nova-core';
+
 export type Metric = {
   label: string;
   value: number | string;
@@ -15,8 +17,13 @@ export type Recommendation = {
   status: string;
 };
 
+export type DashboardSummary = typeof fallbackSummary & {
+  novaCore: NovaCoreWorkflow;
+};
+
 export const fallbackSummary = {
   site: {
+    id: 'site-solarhub-agro-001',
     name: 'SolarHub Agrivoltaic Demo Site',
     status: 'demo_ready',
     health_score: 86,
@@ -55,9 +62,10 @@ export const fallbackSummary = {
       status: 'operator_review',
     },
   ] as Recommendation[],
+  novaCore: novaCoreFallbackWorkflow,
 };
 
-export async function getDashboardSummary() {
+async function getNeoAgroApiSummary() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
   try {
     const response = await fetch(`${apiUrl}/api/v1/dashboard/summary`, { next: { revalidate: 10 } });
@@ -66,4 +74,15 @@ export async function getDashboardSummary() {
   } catch {
     return fallbackSummary;
   }
+}
+
+export async function getDashboardSummary(): Promise<DashboardSummary> {
+  const summary = await getNeoAgroApiSummary();
+  const siteId = summary?.site?.id || fallbackSummary.site.id;
+  const novaCore = await getNovaCoreWorkflow({ siteId, dashboardSummary: summary });
+
+  return {
+    ...summary,
+    novaCore,
+  };
 }
