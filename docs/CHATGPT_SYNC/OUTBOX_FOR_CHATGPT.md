@@ -2,78 +2,87 @@
 
 ## Summary
 
-Issue #6 verification was attempted from a fresh GitHub source copy. The web MVP now typechecks, builds, starts locally, and serves `/` plus `/dashboard`. A Next.js config fix was needed because `output: 'standalone'` caused Windows/OneDrive symlink permission failures during `next build`.
+Issue #7 connects the NeoAgro dashboard to a NOVA Core AI v0 workflow contract while preserving deterministic fallback data. The GitHub `nova-core` repo currently defines the platform role in README form but does not expose a running API, so NeoAgro now calls a future `/api/v0/ai/workflow` endpoint only when `NOVA_CORE_API_URL` or `NEXT_PUBLIC_NOVA_CORE_API_URL` is configured.
 
-The API could not be booted in this local Codex environment because Python dependency installation was blocked before project code ran.
+If NOVA Core is offline, absent, or returns incomplete data, the dashboard still renders forecast, simulation, recommendation, and assistant explanation sections from deterministic fallback data.
 
-## Exact Path Used
+Issue #7 was started after Issue #9 API verification passed. Issue #7 does not move local archive assets.
 
-`C:\Users\waelk\OneDrive\Desktop\start up\Neohaven\issue-6-neoagro-platform-main\neoagro-platform-main`
+## Startup File Analysis
+
+A local startup asset routing analysis was completed before this implementation:
+
+- `docs/CHATGPT_SYNC/STARTUP_ASSET_ROUTING_ANALYSIS.md`
+
+Key decision from that analysis: keep the desktop archive as source material, use GitHub repos as product homes, and migrate selected docs/assets through reviewed commits. For Issue #7 specifically, use a NeoAgro-side NOVA Core client contract with fallback because `nova-core` does not yet provide a live API implementation.
 
 ## Files Changed
 
-- `apps/web/next.config.mjs`
+- `.github/workflows/ci.yml`
+- `apps/web/app/dashboard/page.tsx`
+- `apps/web/lib/demo.ts`
+- `apps/web/lib/nova-core.ts`
+- `apps/web/package.json`
+- `apps/web/tests/nova-core-fallback.test.mjs`
+- `docs/GITHUB_FIRST_MVP_RUNBOOK.md`
 - `docs/CHATGPT_SYNC/OUTBOX_FOR_CHATGPT.md`
 
-## Commands Run
+## Commands Run / Actions Taken
 
-- `git clone https://github.com/wisemaiarservices-debug/neoagro-platform.git issue-6-neoagro-platform-fresh`
-- `Invoke-WebRequest -Uri "https://github.com/wisemaiarservices-debug/neoagro-platform/archive/refs/heads/main.zip" -OutFile "issue-6-neoagro-platform-main.zip"`
-- `Expand-Archive -LiteralPath "issue-6-neoagro-platform-main.zip" -DestinationPath "issue-6-neoagro-platform-main" -Force`
-- `Get-Content AGENTS.md`
-- `Get-Content docs/GITHUB_FIRST_MVP_RUNBOOK.md`
-- `python -m venv .venv`
-- `python -m ensurepip --upgrade`
-- `pnpm install`
-- `pnpm install --config.strict-ssl=false`
-- `pnpm run typecheck`
-- `pnpm run build`
-- `pnpm run dev`
-- `Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:3000/"`
-- `Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:3000/dashboard"`
+- Read Issue #7.
+- Read `AGENTS.md`.
+- Read `docs/CHATGPT_SYNC/INBOX_FOR_CODEX.md`.
+- Reviewed GitHub repos:
+  - `wisemaiarservices-debug/neoagro-platform`
+  - `wisemaiarservices-debug/nova-core`
+  - `wisemaiarservices-debug/neogrid-platform`
+  - `wisemaiarservices-debug/neocell-platform`
+  - `wisemaiarservices-debug/NeoHaven-repo-root`
+  - `wisemaiarservices-debug/documentation`
+- Scanned local startup archive roots:
+  - `NeoAgro`
+  - `Neohaven`
+  - `NeoHaven_Full_Investor_Kit`
+  - `NeoHaven_Investor_Assets`
+  - `NeoHaven_Professional_Pack_v2`
+  - `NeoHaven_System_B_Final`
+  - `NovaCore`
+  - `docs`
+- Created branch `codex/issue-7-nova-core-ai-v0`.
+- Added NOVA Core AI v0 client contract and fallback data.
+- Added dashboard sections for forecast, simulation, recommendation, and assistant explanation.
+- Added Node test for fallback behavior.
+- Updated CI to run `npm test` before typecheck/build.
+- Updated the GitHub-first MVP runbook.
 
-## Install Result
+## Tests Run
 
-API install failed because the available bundled Python failed during `ensurepip` with `OPENSSL_Uplink ... no OPENSSL_Applink`.
+Planned CI checks on PR:
 
-Web install initially failed with `UNABLE_TO_VERIFY_LEAF_SIGNATURE` against the npm registry. A one-time local verification workaround, `pnpm install --config.strict-ssl=false`, succeeded.
+- `npm install`
+- `npm test`
+- `npm run typecheck`
+- `npm run build`
+- Existing API import smoke job
 
-## API Boot Result
+## What Passed
 
-Not booted. FastAPI was not installed, and Python/pip bootstrap failed before API dependencies could be installed.
+Pending PR CI at the time this outbox entry was written.
 
-## Web Boot Result
+## What Failed
 
-Passed after the Next config fix.
-
-- `/` returned HTTP 200.
-- `/dashboard` returned HTTP 200.
-- Dashboard response contained `Heatwave agrivoltaic optimization`.
-
-## Docker Result
-
-Not run. Docker was not available in the local shell.
-
-## Smoke Test Result
-
-Passed for web routes.
-
-Blocked for API routes:
-
-- `/health`
-- `/api/v1/dashboard/summary`
+No known code failure yet. Local Windows Python/npm tooling remains unreliable, so GitHub Actions is the main verification path.
 
 ## Remaining Blockers
 
-- Local Git executable on PATH was missing; bundled Git could not clone over HTTPS because `remote-https` helper was unavailable. A fresh GitHub source archive was used instead.
-- Python environment cannot install API dependencies due bundled Python `ensurepip` OpenSSL failure.
-- npm registry certificate verification failed unless strict SSL was disabled for the local install.
-- `next@14.2.23` is deprecated and pnpm reported a security advisory warning.
+- `nova-core` does not yet expose a real API service. NeoAgro uses a future endpoint contract plus deterministic fallback.
+- Docker verification remains dependent on a Docker-enabled machine.
+- `next@14.2.23` still has an upstream security advisory and should be upgraded separately.
 
-## Next Recommended Task
+## Suggested Next Task
 
-Verify the API in GitHub Actions or another machine with working Python/pip, then upgrade Next.js to a patched version and rerun full API plus web smoke tests.
+Implement the matching NOVA Core AI v0 service in `wisemaiarservices-debug/nova-core` with `POST /api/v0/ai/workflow`, then run NeoAgro against it with `NOVA_CORE_API_URL` configured.
 
 ## Suggested Commit Message
 
-`fix(web): avoid standalone symlink build failure on Windows`
+`feat(web): connect dashboard to NOVA Core AI v0 fallback workflow`
