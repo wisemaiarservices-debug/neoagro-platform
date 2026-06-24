@@ -18,8 +18,50 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r apps/api/requirements.txt
-      - name: Import API app
-        run: python -c "from apps.api.main import app; print(app.title)"
+      - name: Start API
+        working-directory: apps/api
+        run: |
+          python -m uvicorn main:app --host 127.0.0.1 --port 8000 > api.log 2>&1 &
+          echo $! > api.pid
+      - name: Wait for API health
+        run: |
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:8000/health; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat apps/api/api.log
+          exit 1
+      - name: Verify API responses
+        run: |
+          python - <<'PY'
+          import json
+          from urllib.request import urlopen
+
+          def get_json(path: str):
+              with urlopen(f"http://127.0.0.1:8000{path}", timeout=10) as response:
+                  assert response.status == 200, f"{path} returned {response.status}"
+                  return json.loads(response.read().decode("utf-8"))
+
+          health = get_json("/health")
+          assert health["status"] == "ok", health
+          assert health["service"] == "neoagro-api", health
+
+          summary = get_json("/api/v1/dashboard/summary")
+          assert summary["scenario"] == "Heatwave agrivoltaic optimization", summary
+          assert summary["site"]["status"] == "demo_ready", summary
+          assert len(summary["kpis"]) >= 6, summary
+          assert len(summary["recommendations"]) >= 2, summary
+          print("API smoke passed")
+          PY
+      - name: Stop API
+        if: always()
+        run: |
+          if [ -f apps/api/api.pid ]; then
+            kill "$(cat apps/api/api.pid)" || true
+          fi
+          cat apps/api/api.log || true
 
   web-build:
     runs-on: ubuntu-latest
