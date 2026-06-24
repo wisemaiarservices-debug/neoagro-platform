@@ -90,7 +90,7 @@ export const novaCoreFallbackWorkflow: NovaCoreWorkflow = {
   assistant: {
     summary: 'NOVA Core AI v0 recommends operator-approved evening irrigation for the SolarHub heatwave scenario.',
     explanation:
-      'The deterministic AI v0 workflow combines observed soil moisture decline, forecast heat stress, expected solar output changes, and water-energy impact scoring. It recommends a human-approved timing change rather than autonomous control.',
+      'The deterministic AI v0 workflow combines observed soil moisture decline, forecast heat stress, expected solar output changes, and water-energy impact scoring. It recommends an operator-approved timing change rather than autonomous control.',
     guardrails: [
       'Operator approval required before action',
       'No autonomous control of pumps or critical infrastructure',
@@ -131,6 +131,13 @@ function normalizeWorkflow(value: Partial<NovaCoreWorkflow>): NovaCoreWorkflow {
   };
 }
 
+function getErrorMessage(error: unknown): string {
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+  return 'Unknown NOVA Core request failure.';
+}
+
 export async function getNovaCoreWorkflow(options: NovaCoreWorkflowOptions = {}): Promise<NovaCoreWorkflow> {
   const apiUrl = cleanApiUrl(options.apiUrl) || getNovaCoreApiUrl();
   if (!apiUrl) return withFallback();
@@ -163,8 +170,7 @@ export async function getNovaCoreWorkflow(options: NovaCoreWorkflowOptions = {})
 
     return normalizeWorkflow(workflow);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown NOVA Core request failure.';
-    return withFallback(message);
+    return withFallback(getErrorMessage(error));
   } finally {
     clearTimeout(timeout);
   }
