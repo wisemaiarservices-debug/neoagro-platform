@@ -6,6 +6,7 @@ function format(value: number | string, unit?: string) {
 
 export default async function DashboardPage() {
   const summary = await getDashboardSummary();
+  const novaCore = summary.novaCore;
 
   return (
     <main className="container">
@@ -23,6 +24,7 @@ export default async function DashboardPage() {
         </p>
         <div>
           {summary.workflow.map((step: string) => <span key={step} className="badge">{step}</span>)}
+          <span className="badge">NOVA Core AI v0: {novaCore.status}</span>
         </div>
       </section>
 
@@ -52,6 +54,49 @@ export default async function DashboardPage() {
           <p>Carbon reduction: {summary.impact.expected_carbon_reduction_kg} kgCO2e</p>
           <p>Yield risk reduction: {summary.impact.expected_yield_risk_reduction_pct}%</p>
           <p>Resilience gain: {summary.impact.expected_resilience_gain_pct}%</p>
+        </div>
+      </section>
+
+      <section className="grid grid-2" style={{ marginTop: 18 }}>
+        <div className="card">
+          <div className="kicker">NOVA Core Forecast / {novaCore.source}</div>
+          <h2>{novaCore.forecast.title}</h2>
+          <p>Risk: {novaCore.forecast.risk}</p>
+          <p>Horizon: {novaCore.forecast.horizon}</p>
+          <p>Confidence: {Math.round(novaCore.forecast.confidence * 100)}%</p>
+          <div>
+            {novaCore.forecast.signals.map((signal: string) => <span key={signal} className="badge">{signal}</span>)}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="kicker">NOVA Core Simulation</div>
+          <h2>{novaCore.simulation.scenario}</h2>
+          <p>{novaCore.simulation.action}</p>
+          <p>Water saved: {novaCore.simulation.water_saved_m3} m3</p>
+          <p>Energy shifted: {novaCore.simulation.energy_shifted_kwh} kWh</p>
+          <p>Resilience gain: {novaCore.simulation.resilience_gain_pct}%</p>
+        </div>
+      </section>
+
+      <section className="grid grid-2" style={{ marginTop: 18 }}>
+        <div className="card recommendation">
+          <div className="kicker">NOVA Core Recommendation / {novaCore.recommendation.priority}</div>
+          <h2>{novaCore.recommendation.title}</h2>
+          <p>{novaCore.recommendation.operator_action}</p>
+          <p>Confidence: {Math.round(novaCore.recommendation.confidence * 100)}%</p>
+          <div>
+            {novaCore.recommendation.expected_impact.map((impact: string) => <span key={impact} className="badge">{impact}</span>)}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="kicker">NOVA Assistant Explanation</div>
+          <h2>{novaCore.assistant.summary}</h2>
+          <p>{novaCore.assistant.explanation}</p>
+          <div>
+            {novaCore.assistant.guardrails.map((guardrail: string) => <span key={guardrail} className="badge">{guardrail}</span>)}
+          </div>
         </div>
       </section>
 
