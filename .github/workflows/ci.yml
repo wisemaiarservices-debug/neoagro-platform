@@ -31,6 +31,9 @@ jobs:
       - name: Install web dependencies
         working-directory: apps/web
         run: npm install
+      - name: Test web fallback behavior
+        working-directory: apps/web
+        run: npm test
       - name: Typecheck web
         working-directory: apps/web
         run: npm run typecheck
