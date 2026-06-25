@@ -1,4 +1,4 @@
-import { getDashboardSummary } from '../../lib/demo';
+import { getDashboardSummary, type Metric } from '../../lib/demo';
 import { getNovaCoreInsight } from '../../lib/nova-core';
 
 type DashboardSummary = Awaited<ReturnType<typeof getDashboardSummary>>;
@@ -123,7 +123,7 @@ function Topbar({ summary }: { summary: DashboardSummary }) {
 function KpiStrip({ summary }: { summary: DashboardSummary }) {
   return (
     <section className="kpi-strip" aria-label="Key operating indicators">
-      {summary.kpis.map((metric) => (
+      {summary.kpis.map((metric: Metric) => (
         <article className="cc-kpi" key={metric.label}>
           <div className="micro-label">{metric.trend}</div>
           <div className="kpi-value">{format(metric.value, metric.unit)}</div>
@@ -269,7 +269,7 @@ export default async function DashboardPage() {
                 sustainability, digital twin, and operator-approved AI recommendations.
               </p>
               <div className="workflow-row">
-                {summary.workflow.map((step) => <span key={step}>{step}</span>)}
+                {summary.workflow.map((step: string) => <span key={step}>{step}</span>)}
               </div>
             </div>
             <div className="hero-status">
