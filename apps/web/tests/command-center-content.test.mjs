@@ -41,6 +41,7 @@ test('dashboard keeps main NOVA Core integration', () => {
     'NOVA Core AI v0',
     'Shared AI v0 risk model',
     'main branch integration',
+    'fallback',
   ];
 
   for (const marker of requiredMarkers) {
