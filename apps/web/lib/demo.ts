@@ -17,7 +17,7 @@ export type Recommendation = {
 
 export const fallbackSummary = {
   site: {
-    name: 'SolarHub Agrivoltaic Demo Site',
+    name: 'Agrivoltaic Operations Site',
     status: 'demo_ready',
     health_score: 86,
   },
