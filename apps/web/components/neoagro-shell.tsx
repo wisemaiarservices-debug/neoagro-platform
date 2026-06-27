@@ -48,7 +48,7 @@ export function NeoAgroShell({ children }: { children: ReactNode }) {
         <header className="ag-topbar">
           <div>
             <div className="ag-micro">SITE</div>
-            <strong>Mesa Verde 01 / SolarHub Demo</strong>
+            <strong>Agrivoltaic Operations Site</strong>
           </div>
           <div className="ag-topbar-actions">
             <span className="ag-search"><Search size={14} /> Search fields, sensors...</span>

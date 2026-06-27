@@ -10,7 +10,7 @@ const dashboardRouteSource = readFileSync(join(__dirname, '..', 'app', 'dashboar
 const stylesSource = readFileSync(join(__dirname, '..', 'app', 'globals.css'), 'utf8');
 const novaCoreSource = readFileSync(join(__dirname, '..', 'lib', 'nova-core.ts'), 'utf8');
 
-test('dashboard preserves Lovable NeoAgro command center modules', () => {
+test('dashboard preserves NeoAgro command center modules', () => {
   const requiredMarkers = [
     'Solar Production',
     'Crop Health',
@@ -39,8 +39,8 @@ test('dashboard keeps main NOVA Core integration', () => {
     'nova.connected',
     'NOVA Core AI v0',
     'NOVA Core recommendation',
-    'main branch integration',
-    'fallback',
+    'operator-approved intelligence',
+    'standby',
   ];
 
   const novaSource = `${dashboardSource}\n${dashboardRouteSource}`;

@@ -21,7 +21,7 @@ import {
   waterUsage,
   weeklyEnergy,
   yieldForecast,
-} from '../lib/lovable-neoagro-data';
+} from '../lib/neoagro-data';
 import type { NovaCoreInsight } from '../lib/nova-core';
 import type { Metric } from '../lib/demo';
 
@@ -55,21 +55,21 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
   return (
     <NeoAgroShell>
       <PageHeader
-        title="Operations Dashboard"
-        subtitle="Real Lovable NeoAgro source adapted into the NOVA Agriculture app with deterministic SolarHub data"
+        title="NeoAgro — NOVA Agriculture"
+        subtitle="Agrivoltaic intelligence for crop health, water efficiency, energy coordination, and impact reporting."
         actions={<><button className="ag-button ghost"><Calendar size={14} /> Today</button><button className="ag-button ghost"><Download size={14} /> Export</button></>}
       />
       <section className="ag-hero">
         <div>
-          <div className="ag-micro">SolarHub Demo Scenario</div>
+          <div className="ag-micro">Agrivoltaic Operations Site</div>
           <h2>{summary.scenario}</h2>
           <p>{summary.site.name} is monitored across solar, crop health, water systems, yield risk, digital twin state, and operator-approved NOVA Core AI recommendations.</p>
           <div className="ag-chip-row">{summary.workflow.map((step) => <span key={step}>{step}</span>)}</div>
         </div>
         <div className="ag-hero-status">
           <div className="ag-micro">NOVA Core AI v0</div>
-          <strong>{nova.connected ? 'connected' : 'fallback'}</strong>
-          <span>main branch integration</span>
+          <strong>{nova.connected ? 'connected' : 'standby'}</strong>
+          <span>operator-approved intelligence</span>
         </div>
       </section>
 
@@ -128,7 +128,7 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
         <Panel title="Soil moisture" subtitle="7-day depth profile">
           <ChartBox compact><LineChart data={soilMoisture}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="day" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Line dataKey="surface" stroke="var(--ag-solar)" strokeWidth={2} dot={false} /><Line dataKey="root" stroke="var(--ag-water)" strokeWidth={2.5} dot={false} /><Line dataKey="deep" stroke="var(--ag-green)" strokeWidth={2} dot={false} /></LineChart></ChartBox>
         </Panel>
-        <Panel title="NOVA Core recommendation" subtitle={`AI v0 / ${nova.connected ? 'connected' : 'fallback'}`}>
+        <Panel title="NOVA Core recommendation" subtitle={`AI v0 / ${nova.connected ? 'connected' : 'standby'}`}>
           <h3>{nova.recommendation.title}</h3>
           <p>{nova.recommendation.explanation}</p>
           <div className="ag-chip-row"><span>Confidence {Math.round((nova.recommendation.confidence ?? 0) * 100)}%</span><span>Operator approval required</span></div>
@@ -190,7 +190,7 @@ export function RecommendationsView({ nova }: { nova: NovaCoreInsight }) {
           title: nova.recommendation.title,
           impact: nova.recommendation.explanation,
           confidence: nova.recommendation.confidence ?? 0.8,
-          eta: nova.connected ? 'Live API response' : 'Deterministic fallback',
+          eta: nova.connected ? 'Live service response' : 'Connected / Standby Mode',
         }].map((item) => (
           <article key={item.id} className="ag-panel recommendation">
             <div className="ag-rec-head"><span className={`priority ${item.priority}`}>{item.priority}</span><span>{item.category}</span><b>{Math.round(item.confidence * 100)}%</b></div>

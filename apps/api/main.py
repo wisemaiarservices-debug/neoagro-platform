@@ -29,7 +29,7 @@ class Recommendation(BaseModel):
 app = FastAPI(
     title="NeoAgro API",
     version="0.1.0",
-    description="NOVA Agriculture demo API for agrivoltaic intelligence.",
+    description="NOVA Agriculture API for agrivoltaic intelligence.",
 )
 
 origins = os.getenv("NEOAGRO_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
@@ -49,7 +49,7 @@ def now_iso() -> str:
 def demo_site() -> dict[str, Any]:
     return {
         "id": "site-solarhub-agro-001",
-        "name": "SolarHub Agrivoltaic Demo Site",
+        "name": "Agrivoltaic Operations Site",
         "type": "agrivoltaic_pilot",
         "country": "Tunisia",
         "status": "demo_ready",
