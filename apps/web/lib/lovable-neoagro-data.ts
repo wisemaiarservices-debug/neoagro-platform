@@ -1,3 +1,4 @@
+// All non-empty time series in this file are illustrative UI fixtures, not field telemetry or validated forecasts.
 export const hours = [
   '00:00', '02:00', '04:00', '06:00', '08:00', '10:00',
   '12:00', '14:00', '16:00', '18:00', '20:00', '22:00',
@@ -77,115 +78,65 @@ export const sustainabilityScore = {
   ],
 };
 
-export const energyForecast = [
-  { date: 'Jun 25', low: 1620, expected: 2260, high: 2760 },
-  { date: 'Jun 26', low: 1740, expected: 2390, high: 2920 },
-  { date: 'Jun 27', low: 1810, expected: 2460, high: 3010 },
-  { date: 'Jun 28', low: 1780, expected: 2425, high: 2960 },
-  { date: 'Jun 29', low: 1660, expected: 2310, high: 2840 },
-  { date: 'Jun 30', low: 1585, expected: 2198, high: 2690 },
-  { date: 'Jul 01', low: 1715, expected: 2365, high: 2885 },
-  { date: 'Jul 02', low: 1832, expected: 2510, high: 3074 },
-];
+export const energyForecast: Array<{ date: string; low: number; expected: number; high: number }> = [];
 
-export const yieldForecast = [
-  { field: 'Lettuce', previous: 9.9, estimated: 11.4, potential: 13.1 },
-  { field: 'Tomatoes', previous: 33.8, estimated: 38.2, potential: 43.9 },
-  { field: 'Spinach', previous: 8.4, estimated: 9.6, potential: 11.0 },
-  { field: 'Strawberry', previous: 5.2, estimated: 6.1, potential: 7.0 },
-];
+export const yieldForecast: Array<{ field: string; previous: number; estimated: number; potential: number }> = [];
 
-export const waterDemandForecast = [
-  { date: 'Jun 25', demand: 1120, supply: 1520 },
-  { date: 'Jun 26', demand: 1184, supply: 1488 },
-  { date: 'Jun 27', demand: 1238, supply: 1455 },
-  { date: 'Jun 28', demand: 1322, supply: 1420 },
-  { date: 'Jun 29', demand: 1380, supply: 1395 },
-  { date: 'Jun 30', demand: 1412, supply: 1410 },
-  { date: 'Jul 01', demand: 1368, supply: 1452 },
-  { date: 'Jul 02', demand: 1296, supply: 1490 },
-];
+export const waterDemandForecast: Array<{ date: string; demand: number; supply: number }> = [];
 
 export const aiRecommendations = [
   {
-    id: 'rec-evening-irrigation-001',
-    priority: 'high' as const,
-    category: 'Water',
-    title: 'Shift irrigation to evening window',
-    impact: 'Save 3.2 m3/day and reduce heat-driven evaporation during the 39 C operating window.',
-    confidence: 0.87,
-    eta: 'Operator review today',
+    id: "neoagro-review-field-data-001",
+    priority: "review_required" as const,
+    category: "Field data",
+    title: "Verify crop, soil, root-zone and sensor data before irrigation assessment",
+    impact: "No irrigation prescription or impact estimate generated.",
+    confidence: null,
+    eta: "Operator review required",
   },
   {
-    id: 'rec-shade-balance-001',
-    priority: 'high' as const,
-    category: 'Solar / Crop',
-    title: 'Hold panel row 7 at crop-protective tilt',
-    impact: 'Balance solar production with shade coverage for Zone 4-B until soil moisture recovers.',
-    confidence: 0.84,
-    eta: 'Apply after approval',
+    id: "neoagro-review-source-data-002",
+    priority: "review_required" as const,
+    category: "Data provenance",
+    title: "Connect weather, irrigation meter and energy sources with provenance",
+    impact: "Forecasting remains disabled until source quality is verified.",
+    confidence: null,
+    eta: "Integration required",
   },
   {
-    id: 'rec-sensor-check-001',
-    priority: 'medium' as const,
-    category: 'Infrastructure',
-    title: 'Inspect soil sensor node A3',
-    impact: 'Restore telemetry confidence before the heat peak and improve forecast stability.',
-    confidence: 0.78,
-    eta: 'Within 24 hours',
-  },
-  {
-    id: 'rec-load-shift-001',
-    priority: 'low' as const,
-    category: 'Energy',
-    title: 'Shift packing load to peak solar window',
-    impact: 'Use local solar generation and reduce grid draw by 18 kWh.',
-    confidence: 0.72,
-    eta: 'Next schedule cycle',
+    id: "neoagro-review-method-003",
+    priority: "review_required" as const,
+    category: "Method validation",
+    title: "Validate crop-specific ET₀, soil-water and agrivoltaic methods",
+    impact: "No calibrated model or validated optimization is available.",
+    confidence: null,
+    eta: "Scientific validation required",
   },
 ];
 
 export const predictions = [
-  { label: 'Next 7d energy', value: '16.8 MWh', delta: '+4.2%', positive: true },
-  { label: 'Next 7d yield', value: '12.4 t', delta: '+1.8%', positive: true },
-  { label: 'Water demand', value: '9.8 kL', delta: '-6.1%', positive: true },
-  { label: 'Carbon offset', value: '2.74 t', delta: '+3.0%', positive: true },
+  { label: "Energy forecast", value: "—", delta: "Not generated", positive: false },
+  { label: "Yield forecast", value: "—", delta: "Not generated", positive: false },
+  { label: "Water demand", value: "—", delta: "Not generated", positive: false },
+  { label: "Carbon impact", value: "—", delta: "Not calculated", positive: false },
 ];
 
-export const optimizations = [
-  { label: 'Energy mix optimization', before: 78, after: 92 },
-  { label: 'Irrigation efficiency', before: 64, after: 88 },
-  { label: 'Panel-crop shading balance', before: 71, after: 86 },
-  { label: 'Predictive maintenance', before: 55, after: 81 },
-];
+export const optimizations: Array<{ label: string; before: number; after: number }> = [];
 
-export const carbonMonthly = [
-  { month: 'Jan', offset: 8, baseline: 14 },
-  { month: 'Feb', offset: 9, baseline: 14 },
-  { month: 'Mar', offset: 10, baseline: 14 },
-  { month: 'Apr', offset: 11, baseline: 14 },
-  { month: 'May', offset: 12, baseline: 14 },
-  { month: 'Jun', offset: 13, baseline: 14 },
-  { month: 'Jul', offset: 14, baseline: 14 },
-  { month: 'Aug', offset: 13, baseline: 14 },
-  { month: 'Sep', offset: 12, baseline: 14 },
-  { month: 'Oct', offset: 11, baseline: 14 },
-  { month: 'Nov', offset: 10, baseline: 14 },
-  { month: 'Dec', offset: 9, baseline: 14 },
-];
+export const carbonMonthly: Array<{ month: string; offset: number; baseline: number }> = [];
 
 export const esgMetrics = [
-  { pillar: 'Environmental', score: 91, items: ['Carbon -42%', 'Water -38%', 'Biodiversity +24%'] },
-  { pillar: 'Social', score: 84, items: ['Local jobs +18', 'Worker safety A', 'Community grants'] },
-  { pillar: 'Governance', score: 88, items: ['ISO 14001', 'Audit clean', 'Board diversity 50%'] },
+  { pillar: "Environmental", score: "—", items: ["No verified carbon baseline", "No metered water baseline", "No audited biodiversity evidence"] },
+  { pillar: "Social", score: "—", items: ["No verified workforce dataset", "No audited safety dataset", "No documented community outcomes"] },
+  { pillar: "Governance", score: "—", items: ["No audit evidence supplied", "No certification evidence supplied", "No verified governance dataset"] },
 ];
 
 export const fieldSensors = [
-  { id: 'S-12', x: 18, y: 28, type: 'soil', value: '62%', status: 'ok' },
-  { id: 'S-07', x: 42, y: 18, type: 'panel', value: '412W', status: 'ok' },
-  { id: 'S-21', x: 64, y: 36, type: 'soil', value: '38%', status: 'warn' },
-  { id: 'S-04', x: 78, y: 60, type: 'weather', value: '39 C', status: 'ok' },
-  { id: 'S-33', x: 30, y: 70, type: 'water', value: '12 L/m', status: 'ok' },
-  { id: 'S-18', x: 52, y: 52, type: 'panel', value: '0W', status: 'alert' },
-  { id: 'S-29', x: 86, y: 22, type: 'soil', value: '55%', status: 'ok' },
+  { id: "DEMO-S-01", x: 18, y: 28, type: "soil", value: "Not connected", status: "unverified" },
+  { id: "DEMO-S-02", x: 42, y: 18, type: "panel", value: "Not connected", status: "unverified" },
+  { id: "DEMO-S-03", x: 64, y: 36, type: "soil", value: "Not connected", status: "unverified" },
+  { id: "DEMO-S-04", x: 78, y: 60, type: "weather", value: "Not connected", status: "unverified" },
+  { id: "DEMO-S-05", x: 30, y: 70, type: "water", value: "Not connected", status: "unverified" },
+  { id: "DEMO-S-06", x: 52, y: 52, type: "panel", value: "Not connected", status: "unverified" },
+  { id: "DEMO-S-07", x: 86, y: 22, type: "soil", value: "Not connected", status: "unverified" },
 ];
