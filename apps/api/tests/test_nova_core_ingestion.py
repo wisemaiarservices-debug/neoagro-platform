@@ -87,6 +87,11 @@ class NovaCoreIngestionClientTests(unittest.TestCase):
             with self.subTest(endpoint=endpoint), self.assertRaises(NovaCoreIngestionError):
                 submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
 
+    def test_credentials_reject_header_newlines(self):
+        env = dict(self.env, NOVA_CORE_ACCESS_CLIENT_ID="client\\r\\nInjected: yes")
+        with self.assertRaisesRegex(NovaCoreIngestionError, "credentials_invalid"):
+            submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
+
     def test_upstream_rejection_is_safely_normalized(self):
         with self.assertRaises(NovaCoreIngestionError) as caught:
             submit_observation(self.payload, environ=self.env, connection_factory=RejectedConnection)
