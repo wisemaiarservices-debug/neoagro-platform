@@ -88,7 +88,7 @@ class NovaCoreIngestionClientTests(unittest.TestCase):
                 submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
 
     def test_credentials_reject_header_newlines(self):
-        env = dict(self.env, NOVA_CORE_ACCESS_CLIENT_ID="client\\r\\nInjected: yes")
+        env = dict(self.env, NOVA_CORE_ACCESS_CLIENT_ID="client\r\nInjected: yes")
         with self.assertRaisesRegex(NovaCoreIngestionError, "credentials_invalid"):
             submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
 
