@@ -1,64 +1,73 @@
 export type Metric = {
   label: string;
-  value: number | string;
+  value: number | string | null;
   unit: string;
   trend: string;
+  data_classification?: string;
 };
 
 export type Recommendation = {
   id: string;
   title: string;
   priority: string;
-  confidence: number;
+  confidence: number | null;
   explanation: string;
-  expected_impact: Record<string, number>;
+  expected_impact: Record<string, number | null>;
   status: string;
 };
 
 export const fallbackSummary = {
   site: {
-    name: 'SolarHub Agrivoltaic Demo Site',
-    status: 'demo_ready',
-    health_score: 86,
+    name: "Illustrative Agrivoltaic Demo Site",
+    status: "synthetic_demo",
+    health_score: null,
   },
-  scenario: 'Heatwave agrivoltaic optimization',
-  workflow: ['Observe', 'Analyze', 'Forecast', 'Recommend', 'Simulate', 'Optimize', 'Measure Impact'],
+  scenario: "Illustrative agrivoltaic workflow · no live telemetry",
+  workflow: ["Register sources", "Verify observations", "Validate methods", "Review screening", "Approve field action", "Measure outcomes"],
   kpis: [
-    { label: 'Site Health', value: 86, unit: '%', trend: 'up' },
-    { label: 'Crop Health', value: 82, unit: '%', trend: 'stable' },
-    { label: 'Soil Moisture', value: 31, unit: '%', trend: 'down' },
-    { label: 'Solar Production', value: 42.6, unit: 'kW', trend: 'up' },
-    { label: 'Water Use Today', value: 18.4, unit: 'm3', trend: 'down' },
-    { label: 'Carbon Avoided', value: 126, unit: 'kgCO2e', trend: 'up' },
+    { label: "Site health", value: null, unit: "score", trend: "not_assessed" },
+    { label: "Crop health", value: null, unit: "score", trend: "not_assessed" },
+    { label: "Soil moisture", value: null, unit: "%", trend: "not_assessed" },
+    { label: "Solar production", value: null, unit: "kW", trend: "not_assessed" },
+    { label: "Water use", value: null, unit: "m3", trend: "not_assessed" },
+    { label: "Carbon impact", value: null, unit: "kgCO2e", trend: "not_assessed" },
   ] as Metric[],
   forecast: {
-    weather_risk: 'high_heat',
-    max_temperature_c: 39,
-    water_demand_delta_pct: 18,
-    solar_production_delta_pct: -6,
-    yield_risk: 'medium_high',
+    status: "not_assessed",
+    weather_risk: null,
+    max_temperature_c: null,
+    water_demand_delta_pct: null,
+    solar_production_delta_pct: null,
+    yield_risk: null,
   },
   impact: {
-    expected_water_savings_m3: 3.2,
-    expected_carbon_reduction_kg: 7.5,
-    expected_yield_risk_reduction_pct: 11,
-    expected_resilience_gain_pct: 9,
+    status: "not_estimable_without_verified_baseline",
+    expected_water_savings_m3: null,
+    expected_carbon_reduction_kg: null,
+    expected_yield_risk_reduction_pct: null,
+    expected_resilience_gain_pct: null,
   },
   recommendations: [
     {
-      id: 'rec-evening-irrigation-001',
-      title: 'Shift irrigation to evening window',
-      priority: 'high',
-      confidence: 0.87,
-      explanation: 'Heatwave risk and declining soil moisture increase crop stress. Evening irrigation reduces evaporation and coordinates with lower energy demand.',
-      expected_impact: { water_saved_m3: 3.2, yield_risk_reduction_pct: 11, energy_shifted_kwh: 18, carbon_reduction_kg: 7.5 },
-      status: 'operator_review',
+      id: "neoagro-review-field-data-001",
+      title: "Verify crop, soil, root-zone and sensor data before irrigation assessment",
+      priority: "review_required",
+      confidence: null,
+      explanation: "No verified crop profile, soil-water calibration or field observations are connected. No irrigation schedule or quantitative impact is generated.",
+      expected_impact: { water_saved_m3: null, yield_risk_reduction_pct: null, energy_shifted_kwh: null, carbon_reduction_kg: null },
+      status: "review_required",
     },
   ] as Recommendation[],
+  data_provenance: {
+    data_mode: "synthetic_demo",
+    site_telemetry_connected: false,
+    provider_data_connected: false,
+    caller_supplied_data_verified: false,
+  },
 };
 
 export async function getDashboardSummary() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   try {
     const response = await fetch(`${apiUrl}/api/v1/dashboard/summary`, { next: { revalidate: 10 } });
     if (!response.ok) return fallbackSummary;

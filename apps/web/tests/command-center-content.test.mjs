@@ -16,16 +16,15 @@ test('dashboard preserves Lovable NeoAgro command center modules', () => {
     'Crop Health',
     'Water Usage',
     'Forecasting',
-    'AI Recommendations',
+    'Decision Support Review',
     'Sustainability',
     'Digital Twin',
     'Crop blocks and field zones',
     'Solar production / today',
     'Soil moisture',
-    'Energy production forecast',
-    'Water demand vs supply',
-    'Carbon footprint / 12 month',
-    'Spatial view of panels, sensors, irrigation, weather, and field zones',
+    'Forecast readiness',
+    'Evidence required for impact reporting',
+    'Conceptual layout of panels, sensors, irrigation, weather, and field zones',
   ];
 
   for (const marker of requiredMarkers) {
@@ -37,10 +36,10 @@ test('dashboard keeps main NOVA Core integration', () => {
   const requiredMarkers = [
     'getNovaCoreInsight',
     'nova.connected',
-    'NOVA Core AI v0',
+    'NOVA Core API',
     'NOVA Core recommendation',
-    'main branch integration',
-    'fallback',
+    'Input provenance still requires verification',
+    'Local fallback',
   ];
 
   const novaSource = `${dashboardSource}\n${dashboardRouteSource}`;

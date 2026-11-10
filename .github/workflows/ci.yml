@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - fix/neoagro-provenance-and-demo-integrity
 
 jobs:
   api-smoke:
@@ -49,10 +50,15 @@ jobs:
           assert health["service"] == "neoagro-api", health
 
           summary = get_json("/api/v1/dashboard/summary")
-          assert summary["scenario"] == "Heatwave agrivoltaic optimization", summary
-          assert summary["site"]["status"] == "demo_ready", summary
+          assert summary["scenario"] == "Illustrative agrivoltaic workflow · no live telemetry", summary
+          assert summary["site"]["status"] == "synthetic_demo", summary
           assert len(summary["kpis"]) >= 6, summary
+          assert summary["data_provenance"]["data_mode"] == "synthetic_demo"
+          assert summary["forecast"]["status"] == "not_assessed"
+          assert summary["impact"]["status"] == "not_estimable_without_verified_baseline"
+          assert summary["impact"]["expected_water_savings_m3"] is None
           assert len(summary["recommendations"]) >= 2, summary
+          assert summary["recommendations"][0]["confidence"] is None
           print("API smoke passed")
           PY
       - name: Stop API
