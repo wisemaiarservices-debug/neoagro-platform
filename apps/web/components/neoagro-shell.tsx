@@ -40,7 +40,7 @@ export function NeoAgroShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="ag-status-card">
           <div className="ag-micro"><Activity size={14} /> System status</div>
-          <strong>Operator-approved mode</strong>
+          <strong>Read-only demo mode</strong>
           <span>No live site telemetry connected</span>
         </div>
       </aside>
