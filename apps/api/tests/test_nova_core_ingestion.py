@@ -80,6 +80,8 @@ class NovaCoreIngestionClientTests(unittest.TestCase):
             "https://nova-core.example/other",
             "https://user:pass@nova-core.example/api/v1/observations",
             "https://nova-core.example/api/v1/observations?debug=1",
+            "https://nova-core.example:99999/api/v1/observations",
+            "https://nova-core.example/api/v1/observations/",
         ):
             env = dict(self.env, NOVA_CORE_INGESTION_URL=endpoint)
             with self.subTest(endpoint=endpoint), self.assertRaises(NovaCoreIngestionError):
