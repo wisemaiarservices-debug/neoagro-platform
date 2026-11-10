@@ -23,6 +23,7 @@ import {
   yieldForecast,
 } from '../lib/lovable-neoagro-data';
 import type { NovaCoreInsight } from '../lib/nova-core';
+import { NasaPowerInspector } from './nasa-power-inspector';
 import type { Metric } from '../lib/demo';
 
 type DashboardSummary = {
@@ -72,6 +73,8 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
           <span>Input provenance still requires verification</span>
         </div>
       </section>
+
+      <NasaPowerInspector />
 
       <section className="ag-grid three">
         <MetricCard label="Solar Production · demo" value="487" unit=" kW peak" delta="+8.4%" icon={Sun} tint="solar">
