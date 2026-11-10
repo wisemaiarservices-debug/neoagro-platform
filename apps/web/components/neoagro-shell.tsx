@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 const nav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/forecasting', label: 'Forecasting', icon: TrendingUp },
-  { href: '/recommendations', label: 'AI Recommendations', icon: Brain },
+  { href: '/recommendations', label: 'Decision Support Review', icon: Brain },
   { href: '/sustainability', label: 'Sustainability', icon: Leaf },
   { href: '/digital-twin', label: 'Digital Twin', icon: Cpu },
 ];
