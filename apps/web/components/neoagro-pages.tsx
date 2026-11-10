@@ -26,12 +26,12 @@ import type { NovaCoreInsight } from '../lib/nova-core';
 import type { Metric } from '../lib/demo';
 
 type DashboardSummary = {
-  site: { name: string; status?: string; health_score: number };
+  site: { name: string; status?: string; health_score: number | null };
   scenario: string;
   workflow: string[];
   kpis: Metric[];
-  forecast: Record<string, number | string>;
-  impact: Record<string, number | string>;
+  forecast: Record<string, number | string | null>;
+  impact: Record<string, number | string | null>;
 };
 
 const tooltipStyle = {
@@ -56,47 +56,47 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
     <NeoAgroShell>
       <PageHeader
         title="Operations Dashboard"
-        subtitle="Real Lovable NeoAgro source adapted into the NOVA Agriculture app with deterministic SolarHub data"
+        subtitle="Illustrative SolarHub UI fixtures · not live field telemetry or validated model output"
         actions={<><button className="ag-button ghost"><Calendar size={14} /> Today</button><button className="ag-button ghost"><Download size={14} /> Export</button></>}
       />
       <section className="ag-hero">
         <div>
           <div className="ag-micro">SolarHub Demo Scenario</div>
           <h2>{summary.scenario}</h2>
-          <p>{summary.site.name} is monitored across solar, crop health, water systems, yield risk, digital twin state, and operator-approved NOVA Core AI recommendations.</p>
+          <p>{summary.site.name} is represented with illustrative interface fixtures. No live field, crop, water, weather or energy telemetry is connected.</p>
           <div className="ag-chip-row">{summary.workflow.map((step) => <span key={step}>{step}</span>)}</div>
         </div>
         <div className="ag-hero-status">
-          <div className="ag-micro">NOVA Core AI v0</div>
-          <strong>{nova.connected ? 'connected' : 'fallback'}</strong>
-          <span>main branch integration</span>
+          <div className="ag-micro">NOVA Core API</div>
+          <strong>{nova.connected ? 'API responding' : 'Not connected'}</strong>
+          <span>Input provenance still requires verification</span>
         </div>
       </section>
 
       <section className="ag-grid three">
-        <MetricCard label="Solar Production" value="487" unit=" kW peak" delta="+8.4%" icon={Sun} tint="solar">
+        <MetricCard label="Solar Production · demo" value="487" unit=" kW peak" delta="+8.4%" icon={Sun} tint="solar">
           <MiniArea data={solarProductionToday} dataKey="kw" color="var(--ag-solar)" />
         </MetricCard>
-        <MetricCard label="Battery Status" value={`${batteryStatus.charge}%`} unit={` / ${batteryStatus.capacity} kWh`} delta="+2.1%" icon={Battery}>
+        <MetricCard label="Battery Status · demo" value={`${batteryStatus.charge}%`} unit={` / ${batteryStatus.capacity} kWh`} delta="+2.1%" icon={Battery}>
           <div className="ag-progress"><span style={{ width: `${batteryStatus.charge}%` }} /></div>
           <div className="ag-split"><span>Charging {batteryStatus.flow} kW</span><span>Health {batteryStatus.health}%</span></div>
         </MetricCard>
-        <MetricCard label="Crop Health" value={`${cropHealthAvg}`} unit=" / 100 avg" delta="+1.2%" icon={Sprout}>
+        <MetricCard label="Crop Health · demo" value={`${cropHealthAvg}`} unit=" / 100 avg" delta="+1.2%" icon={Sprout}>
           <div className="ag-field-bars">{cropFields.map((field) => <span key={field.id} style={{ height: `${field.health}%` }} title={field.name} />)}</div>
         </MetricCard>
-        <MetricCard label="Soil Moisture" value={`${soilToday.root}%`} unit=" root zone" delta="-3.0%" icon={Droplets} tint="water">
+        <MetricCard label="Soil Moisture · demo" value={`${soilToday.root}%`} unit=" root zone" delta="-3.0%" icon={Droplets} tint="water">
           <div className="ag-list"><span>Surface <b>{soilToday.surface}%</b></span><span>Root <b>{soilToday.root}%</b></span><span>Deep <b>{soilToday.deep}%</b></span></div>
         </MetricCard>
-        <MetricCard label="Water Usage" value={`${waterToday.used}`} unit=" L today" delta="-6.2%" icon={Gauge} tint="water">
-          <p><b>{waterToday.saved} L</b> saved via AI scheduling.</p>
+        <MetricCard label="Water Usage · demo" value={`${waterToday.used}`} unit=" L today" delta="-6.2%" icon={Gauge} tint="water">
+          <p>Water savings are not calculated. A verified meter baseline and intervention period are required.</p>
         </MetricCard>
-        <MetricCard label="Sustainability Score" value={`${sustainabilityScore.overall}`} unit=" / 100" delta="+4.0%" icon={Leaf}>
-          <p>ESG composite / {sustainabilityScore.carbonOffset} t CO2 offset YTD.</p>
+        <MetricCard label="Sustainability Score · demo" value={`${sustainabilityScore.overall}`} unit=" / 100" delta="+4.0%" icon={Leaf}>
+          <p>No audited ESG, carbon or water outcome data has been supplied.</p>
         </MetricCard>
       </section>
 
       <section className="ag-grid chart-row">
-        <Panel wide title="Solar production / today" subtitle="Live kW output vs forecast">
+        <Panel wide title="Solar production / today" subtitle="Illustrative sample series · no inverter feed or validated forecast">
           <ChartBox>
             <AreaChart data={solarProductionToday}>
               <CartesianGrid stroke="var(--ag-border)" vertical={false} />
@@ -108,7 +108,7 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
             </AreaChart>
           </ChartBox>
         </Panel>
-        <Panel title="Energy mix" subtitle="Solar, battery, and grid source split">
+        <Panel title="Energy mix" subtitle="Illustrative sample split · not a measured energy balance">
           <ChartBox compact>
             <PieChart>
               <Pie data={energyMix} dataKey="value" innerRadius={48} outerRadius={76} strokeWidth={0}>
@@ -233,25 +233,25 @@ export function SustainabilityView() {
 export function DigitalTwinView() {
   return (
     <NeoAgroShell>
-      <PageHeader title="Digital Twin" subtitle="Spatial view of panels, sensors, irrigation, weather, and field zones" actions={<span className="ag-live">Live / 248 sensors</span>} />
+      <PageHeader title="Digital Twin" subtitle="Conceptual layout of panels, sensors, irrigation, weather, and field zones · not georeferenced" actions={<span className="ag-live">Demo schematic · no live feed</span>} />
       <section className="ag-grid twin-layout">
         <div className="ag-panel ag-twin-map">
           <svg className="ag-map-grid" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(180,220,198,.14)" /></pattern></defs><rect width="100%" height="100%" fill="url(#grid)" /></svg>
           {Array.from({ length: 8 }).map((_, row) => <div key={row} className="ag-panel-row" style={{ top: `${12 + row * 10}%` }}>{Array.from({ length: 14 }).map((__, col) => <span key={col} />)}</div>)}
           {fieldSensors.map((sensor) => <div key={sensor.id} className={`ag-sensor ${sensor.status}`} style={{ left: `${sensor.x}%`, top: `${sensor.y}%` }}><span /><b>{sensor.id}</b><em>{sensor.type} / {sensor.value}</em></div>)}
           <div className="ag-compass">N</div>
-          <div className="ag-coords">39.4699 N / 0.3763 W / 84 ha</div>
+          <div className="ag-coords">Conceptual layout · no site coordinates or measured area</div>
         </div>
         <aside className="ag-twin-side">
-          <Panel title="Active alerts" subtitle="Operator-visible events">
+          <Panel title="Example alert states" subtitle="Illustrative placeholders · no live alert feed">
             <Alert icon={AlertTriangle} title="Panel S-18 offline" body="No output for 47 min / dispatch crew" tint="bad" />
             <Alert icon={Droplets} title="Soil moisture low / Strawberry" body="Sensor S-21 at 38%, target 55%" tint="warn" />
             <Alert icon={Wifi} title="Gateway packet loss" body="22% over 10 min, retry in progress" tint="warn" />
           </Panel>
-          <Panel title="Asset summary" subtitle="Shared NOVA asset registry">
-            <div className="ag-list"><span>Solar panels <b>4,820</b></span><span>Edge nodes <b>36</b></span><span>Irrigation valves <b>148</b></span><span>Weather stations <b>6</b></span></div>
+          <Panel title="Asset summary" subtitle="Registry not connected">
+            <div className="ag-list"><span>Solar panels <b>Not registered</b></span><span>Edge nodes <b>Not registered</b></span><span>Irrigation valves <b>Not registered</b></span><span>Weather stations <b>Not registered</b></span></div>
           </Panel>
-          <Panel title="Twin sync" subtitle="Last full sync 4s ago"><div className="ag-score">99.94%</div></Panel>
+          <Panel title="Twin sync" subtitle="Synchronization not configured"><div className="ag-score">—</div><p>No device registry or telemetry stream is connected.</p></Panel>
         </aside>
       </section>
     </NeoAgroShell>
