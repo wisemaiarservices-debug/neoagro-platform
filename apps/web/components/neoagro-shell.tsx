@@ -41,7 +41,7 @@ export function NeoAgroShell({ children }: { children: ReactNode }) {
         <div className="ag-status-card">
           <div className="ag-micro"><Activity size={14} /> System status</div>
           <strong>Operator-approved mode</strong>
-          <span>14 sites / 248 sensors online</span>
+          <span>No live site telemetry connected</span>
         </div>
       </aside>
       <div className="ag-main">
@@ -56,7 +56,7 @@ export function NeoAgroShell({ children }: { children: ReactNode }) {
             <div className="ag-avatar">NA</div>
           </div>
         </header>
-        <main className="ag-content">{children}</main>
+        <main className="ag-content"><div role="status" className="mb-5 rounded-lg border border-amber-500/30 bg-amber-950/20 px-4 py-3 text-xs leading-5 text-amber-200"><b>Illustrative demo workspace.</b> Static charts, crop values, sensor states and asset figures are UI fixtures, not field observations. API reachability does not verify telemetry, calibration or provider data. Forecasts, recommendations and impact claims remain unavailable until validated inputs and methods are connected.</div>{children}</main>
       </div>
     </div>
   );
