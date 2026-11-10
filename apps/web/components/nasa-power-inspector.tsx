@@ -71,8 +71,8 @@ export function NasaPowerInspector() {
     <section className="ag-panel mb-6">
       <div className="ag-panel-head">
         <div>
-          <h3>NASA POWER · observed and reanalysis weather data</h3>
-          <p>Live provider retrieval through NOVA Core. Enter the intended site coordinates; no demo location is assumed.</p>
+          <h3>NASA POWER · daily gridded weather and solar data</h3>
+          <p>Retrieve daily provider data through NOVA Core. Enter the intended site coordinates; no demo location is assumed.</p>
         </div>
         <span className="ag-chip">Provider data · not field telemetry</span>
       </div>
