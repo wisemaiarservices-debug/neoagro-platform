@@ -54,28 +54,21 @@ export const soilMoisture = [
 ];
 
 export const waterUsage = [
-  { day: 'Mon', used: 1280, saved: 410 },
-  { day: 'Tue', used: 1214, saved: 448 },
-  { day: 'Wed', used: 1190, saved: 465 },
-  { day: 'Thu', used: 1162, saved: 492 },
-  { day: 'Fri', used: 1128, saved: 516 },
-  { day: 'Sat', used: 1106, saved: 535 },
-  { day: 'Sun', used: 1088, saved: 552 },
+  { day: 'Mon', used: 1280, saved: null },
+  { day: 'Tue', used: 1214, saved: null },
+  { day: 'Wed', used: 1190, saved: null },
+  { day: 'Thu', used: 1162, saved: null },
+  { day: 'Fri', used: 1128, saved: null },
+  { day: 'Sat', used: 1106, saved: null },
+  { day: 'Sun', used: 1088, saved: null },
 ];
 
 export const sustainabilityScore = {
-  overall: 87,
-  carbonOffset: 142.6,
-  waterSaved: 38.2,
-  renewableRatio: 92,
-  panels: [
-    { label: 'Carbon', value: 91 },
-    { label: 'Water', value: 84 },
-    { label: 'Energy', value: 92 },
-    { label: 'Biodiversity', value: 78 },
-    { label: 'Soil', value: 88 },
-    { label: 'Yield', value: 86 },
-  ],
+  overall: "—",
+  carbonOffset: "—",
+  waterSaved: "—",
+  renewableRatio: "—",
+  panels: [],
 };
 
 export const energyForecast: Array<{ date: string; low: number; expected: number; high: number }> = [];
