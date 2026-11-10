@@ -1,0 +1,96 @@
+import json
+import unittest
+
+from services.nova_core_ingestion import NovaCoreIngestionError, submit_observation
+
+
+class FakeResponse:
+    def __init__(self, status=201, body=b'{"accepted":true,"verification_status":"unverified"}'):
+        self.status = status
+        self.body = body
+
+    def read(self, size=-1):
+        return self.body[:size]
+
+
+class FakeConnection:
+    last = None
+
+    def __init__(self, host, port, timeout):
+        self.host, self.port, self.timeout = host, port, timeout
+        self.closed = False
+        self.request_args = None
+        FakeConnection.last = self
+
+    def request(self, method, path, body, headers):
+        self.request_args = (method, path, body, headers)
+
+    def getresponse(self):
+        return FakeResponse()
+
+    def close(self):
+        self.closed = True
+
+
+class RejectedConnection(FakeConnection):
+    def getresponse(self):
+        return FakeResponse(403, b'{"error":"request_not_authorized"}')
+
+
+class NovaCoreIngestionClientTests(unittest.TestCase):
+    def setUp(self):
+        self.env = {
+            "NOVA_CORE_INGESTION_URL": "https://nova-core-ingest.example.workers.dev/api/v1/observations",
+            "NOVA_CORE_ACCESS_CLIENT_ID": "test-client-id",
+            "NOVA_CORE_ACCESS_CLIENT_SECRET": "test-client-secret",
+        }
+        self.payload = {
+            "site_id": "registered-site",
+            "source_id": "neoagro-weather-01",
+            "module": "neoagro",
+            "metric": "weather.air_temperature",
+            "value": 24.5,
+            "unit": "°C",
+            "observed_at": "2026-11-10T12:00:00Z",
+            "idempotency_key": "provider-record-123",
+            "provenance": {"provider": "example-weather", "acquisition_method": "provider_api"},
+            "quality_flags": [],
+        }
+
+    def test_posts_to_exact_observation_path_with_server_side_access_headers(self):
+        result = submit_observation(self.payload, environ=self.env, connection_factory=FakeConnection)
+        request = FakeConnection.last.request_args
+        self.assertEqual(result["verification_status"], "unverified")
+        self.assertEqual(request[0:2], ("POST", "/api/v1/observations"))
+        headers = request[3]
+        self.assertEqual(headers["CF-Access-Client-Id"], "test-client-id")
+        self.assertEqual(headers["CF-Access-Client-Secret"], "test-client-secret")
+        self.assertNotIn("test-client-secret", request[2].decode())
+        self.assertTrue(FakeConnection.last.closed)
+
+    def test_missing_credentials_fail_closed(self):
+        env = dict(self.env)
+        env.pop("NOVA_CORE_ACCESS_CLIENT_SECRET")
+        with self.assertRaisesRegex(NovaCoreIngestionError, "not_configured"):
+            submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
+
+    def test_rejects_non_https_or_unexpected_endpoint(self):
+        for endpoint in (
+            "http://nova-core.example/api/v1/observations",
+            "https://nova-core.example/other",
+            "https://user:pass@nova-core.example/api/v1/observations",
+            "https://nova-core.example/api/v1/observations?debug=1",
+        ):
+            env = dict(self.env, NOVA_CORE_INGESTION_URL=endpoint)
+            with self.subTest(endpoint=endpoint), self.assertRaises(NovaCoreIngestionError):
+                submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
+
+    def test_upstream_rejection_is_safely_normalized(self):
+        with self.assertRaises(NovaCoreIngestionError) as caught:
+            submit_observation(self.payload, environ=self.env, connection_factory=RejectedConnection)
+        self.assertEqual(caught.exception.status, 403)
+        self.assertNotIn("test-client-secret", str(caught.exception))
+
+
+if __name__ == "__main__":
+    unittest.main()
