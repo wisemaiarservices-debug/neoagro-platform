@@ -122,21 +122,21 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
       </section>
 
       <section className="ag-grid three">
-        <Panel title="Weekly energy" subtitle="Produced / consumed / exported">
+        <Panel title="Weekly energy · demo" subtitle="Illustrative produced / consumed / exported series">
           <ChartBox compact><BarChart data={weeklyEnergy}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="day" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Bar dataKey="produced" fill="var(--ag-solar)" /><Bar dataKey="consumed" fill="var(--ag-green)" /><Bar dataKey="exported" fill="var(--ag-water)" /></BarChart></ChartBox>
         </Panel>
-        <Panel title="Soil moisture" subtitle="7-day depth profile">
+        <Panel title="Soil moisture · demo" subtitle="Illustrative 7-day depth profile">
           <ChartBox compact><LineChart data={soilMoisture}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="day" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Line dataKey="surface" stroke="var(--ag-solar)" strokeWidth={2} dot={false} /><Line dataKey="root" stroke="var(--ag-water)" strokeWidth={2.5} dot={false} /><Line dataKey="deep" stroke="var(--ag-green)" strokeWidth={2} dot={false} /></LineChart></ChartBox>
         </Panel>
-        <Panel title="NOVA Core recommendation" subtitle={`AI v0 / ${nova.connected ? 'connected' : 'fallback'}`}>
+        <Panel title="NOVA Core recommendation" subtitle={`NOVA Core API / ${nova.connected ? "responding · inputs unverified" : "not connected · local fallback"}`}>
           <h3>{nova.recommendation.title}</h3>
           <p>{nova.recommendation.explanation}</p>
-          <div className="ag-chip-row"><span>Confidence {Math.round((nova.recommendation.confidence ?? 0) * 100)}%</span><span>Operator approval required</span></div>
+          <div className="ag-chip-row"><span>{nova.recommendation.confidence == null ? "Confidence not calibrated" : "Confidence " + Math.round(nova.recommendation.confidence * 100) + "%"}</span><span>Operator review required</span></div>
         </Panel>
       </section>
 
       <section className="ag-panel" id="Asset Registry">
-        <div className="ag-panel-head"><div><h3>Crop blocks and field zones</h3><p>Active monitoring zones across the agrivoltaic site.</p></div></div>
+        <div className="ag-panel-head"><div><h3>Crop blocks and field zones · demo</h3><p>Illustrative field-block placeholders · no site registry or sensor feed connected.</p></div></div>
         <div className="ag-table">
           {cropFields.map((field) => (
             <div key={field.id}>
