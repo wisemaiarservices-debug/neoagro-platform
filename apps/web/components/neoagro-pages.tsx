@@ -150,58 +150,58 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
 }
 
 export function ForecastingView() {
-  const totalEnergy = energyForecast.reduce((total, day) => total + day.expected, 0);
-  const totalYield = yieldForecast.reduce((total, day) => total + day.estimated, 0);
-  const totalWater = waterDemandForecast.reduce((total, day) => total + day.demand, 0);
-
   return (
     <NeoAgroShell>
-      <PageHeader title="Forecasting" subtitle="14-day predictive outlook for energy production, yield risk, and water demand" />
+      <PageHeader title="Forecasting" subtitle="Forecasts are disabled until validated weather, crop, soil, energy and water inputs are connected." />
       <section className="ag-grid three">
-        <MetricCard label="Energy / 14 day total" value={`${(totalEnergy / 1000).toFixed(1)}`} unit=" MWh" delta="+5.8%" icon={Zap} tint="solar" />
-        <MetricCard label="Yield / 14 day total" value={`${totalYield.toFixed(1)}`} unit=" tons" delta="+2.3%" icon={Wheat} />
-        <MetricCard label="Water demand" value={`${(totalWater / 1000).toFixed(1)}`} unit=" kL" delta="-4.1%" icon={Droplets} tint="water" />
+        <MetricCard label="Energy forecast" value="—" unit="MWh" delta="Not generated" icon={Zap} tint="solar" />
+        <MetricCard label="Yield forecast" value="—" unit="tons" delta="Not generated" icon={Wheat} />
+        <MetricCard label="Water demand" value="—" unit="kL" delta="Not generated" icon={Droplets} tint="water" />
       </section>
-      <Panel title="Energy production forecast" subtitle="Expected output range with low/high confidence bounds">
-        <ChartBox><ComposedChart data={energyForecast}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="date" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Area dataKey="high" stroke="transparent" fill="rgba(240,176,96,.18)" /><Area dataKey="low" stroke="transparent" fill="var(--ag-bg)" /><Line dataKey="expected" stroke="var(--ag-solar)" strokeWidth={2.5} /></ComposedChart></ChartBox>
+      <Panel title="Forecast readiness" subtitle="No quantitative forecast or confidence interval is currently issued">
+        <ul className="ag-list">
+          <li>Verified weather observations or attributed gridded provider data</li>
+          <li>Site coordinates, timezone and reporting period</li>
+          <li>Crop, cultivar, phenology, root depth and soil-water parameters</li>
+          <li>Metered irrigation, solar and energy time series</li>
+          <li>Versioned historical data and out-of-sample validation</li>
+        </ul>
       </Panel>
-      <section className="ag-grid two">
-        <Panel title="Yield forecast by crop" subtitle="Previous, estimated, and potential tons">
-          <ChartBox><BarChart data={yieldForecast} layout="vertical"><CartesianGrid stroke="var(--ag-border)" horizontal={false} /><XAxis type="number" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis dataKey="field" type="category" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} width={82} /><Tooltip contentStyle={tooltipStyle} /><Bar dataKey="previous" fill="var(--ag-muted)" /><Bar dataKey="estimated" fill="var(--ag-green)" /><Bar dataKey="potential" fill="var(--ag-solar)" /></BarChart></ChartBox>
-        </Panel>
-        <Panel title="Water demand vs supply" subtitle="14-day balance">
-          <ChartBox><AreaChart data={waterDemandForecast}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="date" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Area dataKey="supply" stroke="var(--ag-green)" fill="rgba(120,204,80,.14)" /><Area dataKey="demand" stroke="var(--ag-water)" fill="rgba(96,168,255,.14)" /></AreaChart></ChartBox>
-        </Panel>
-      </section>
     </NeoAgroShell>
   );
 }
 
 export function RecommendationsView({ nova }: { nova: NovaCoreInsight }) {
+  const coreItem = {
+    id: "nova-core-review",
+    priority: nova.recommendation.priority ?? "review_required",
+    category: "NOVA Core",
+    title: nova.recommendation.title ?? "Verify site inputs before operational screening",
+    impact: nova.recommendation.explanation ?? "No operational advice is available.",
+    confidence: typeof nova.recommendation.confidence === "number" ? nova.recommendation.confidence : null,
+    eta: nova.connected ? "API responding · input verification required" : "Local fallback · no operational advice",
+  };
   return (
     <NeoAgroShell>
-      <PageHeader title="AI Recommendations" subtitle="Continuous optimization across energy, crop, and water systems" actions={<button className="ag-button"><Sparkles size={14} /> Run analysis</button>} />
-      <section className="ag-grid four">{predictions.map((item) => <MetricCard key={item.label} label={item.label} value={item.value} delta={item.delta} positive={item.positive} icon={TrendingUp} />)}</section>
+      <PageHeader title="Decision Support Review" subtitle="Review-only screening. No crop-specific prescription, dispatch action or quantified impact is generated from demo data." />
+      <section className="ag-grid four">{predictions.map((item) => <MetricCard key={item.label} label={item.label} value={item.value} delta={item.delta} positive={false} icon={TrendingUp} />)}</section>
       <section className="ag-grid two">
-        {[...aiRecommendations, {
-          id: 'nova-core-live',
-          priority: nova.recommendation.priority === 'high' ? 'high' as const : 'medium' as const,
-          category: 'NOVA Core',
-          title: nova.recommendation.title,
-          impact: nova.recommendation.explanation,
-          confidence: nova.recommendation.confidence ?? 0.8,
-          eta: nova.connected ? 'Live API response' : 'Deterministic fallback',
-        }].map((item) => (
+        {[...aiRecommendations, coreItem].map((item) => (
           <article key={item.id} className="ag-panel recommendation">
-            <div className="ag-rec-head"><span className={`priority ${item.priority}`}>{item.priority}</span><span>{item.category}</span><b>{Math.round(item.confidence * 100)}%</b></div>
+            <div className="ag-rec-head"><span className="priority">{item.priority}</span><span>{item.category}</span><b>{item.confidence == null ? "Not calibrated" : String(Math.round(item.confidence * 100)) + "%"}</b></div>
             <h3>{item.title}</h3>
             <p>{item.impact}</p>
-            <div className="ag-rec-actions"><span>{item.eta}</span><button>Approve after review</button></div>
+            <div className="ag-rec-actions"><span>{item.eta}</span><span>Human review only</span></div>
           </article>
         ))}
       </section>
-      <Panel title="Optimization suggestions" subtitle="Projected gains from applying operator-approved actions">
-        <div className="ag-optimizations">{optimizations.map((item) => <div key={item.label}><span>{item.label}<b>{item.before} {'->'} {item.after}</b></span><div><i style={{ width: `${item.before}%` }} /><em style={{ width: `${item.after}%` }} /></div></div>)}</div>
+      <Panel title="Optimization outputs withheld" subtitle="No optimization is run without verified constraints and a validated method">
+        <ul className="ag-list">
+          <li>Crop and soil calibration, including field capacity and root-zone conditions</li>
+          <li>Verified weather and energy data with timestamps and units</li>
+          <li>Equipment constraints, safety limits and operator-defined objectives</li>
+          <li>Measured baseline, validation protocol and uncertainty reporting</li>
+        </ul>
       </Panel>
     </NeoAgroShell>
   );
@@ -210,22 +210,22 @@ export function RecommendationsView({ nova }: { nova: NovaCoreInsight }) {
 export function SustainabilityView() {
   return (
     <NeoAgroShell>
-      <PageHeader title="Sustainability Reporting" subtitle="ESG performance, carbon reduction, water savings, and renewable energy ratio" />
+      <PageHeader title="Sustainability & Impact Accounting" subtitle="No carbon, water, yield or resilience impact is claimed without a verified baseline and intervention measurements." />
       <section className="ag-grid four">
-        <MetricCard label="Carbon offset YTD" value={`${sustainabilityScore.carbonOffset}`} unit=" t CO2" delta="+12.4%" icon={Leaf} />
-        <MetricCard label="Water savings" value={`${sustainabilityScore.waterSaved}%`} delta="+3.2%" icon={Droplets} tint="water" />
-        <MetricCard label="Renewable ratio" value={`${sustainabilityScore.renewableRatio}%`} delta="+1.1%" icon={Zap} tint="solar" />
-        <MetricCard label="Overall ESG score" value={`${sustainabilityScore.overall}`} unit=" / 100" delta="+4.0%" icon={Award} />
+        <MetricCard label="Carbon impact" value="—" unit="kg CO2e" delta="Not calculated" icon={Leaf} />
+        <MetricCard label="Water savings" value="—" unit="%" delta="Not calculated" icon={Droplets} tint="water" />
+        <MetricCard label="Renewable ratio" value="—" unit="%" delta="Not measured" icon={Zap} tint="solar" />
+        <MetricCard label="ESG score" value="—" unit="" delta="Not audited" icon={Award} />
       </section>
-      <section className="ag-grid chart-row">
-        <Panel wide title="Carbon footprint / 12 month" subtitle="Tons CO2 offset vs baseline">
-          <ChartBox><BarChart data={carbonMonthly}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="month" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Bar dataKey="baseline" fill="var(--ag-muted)" opacity={0.45} /><Bar dataKey="offset" fill="var(--ag-green)" /></BarChart></ChartBox>
-        </Panel>
-        <Panel title="Sustainability dimensions" subtitle="Composite breakdown">
-          <ChartBox compact><RadarChart data={sustainabilityScore.panels}><PolarGrid stroke="var(--ag-border)" /><PolarAngleAxis dataKey="label" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} /><Radar dataKey="value" stroke="var(--ag-green)" fill="rgba(120,204,80,.32)" /></RadarChart></ChartBox>
-        </Panel>
-      </section>
-      <section className="ag-grid three">{esgMetrics.map((pillar) => <article key={pillar.pillar} className="ag-panel"><div className="ag-micro">{pillar.pillar}</div><div className="ag-score">{pillar.score}</div><ul>{pillar.items.map((item) => <li key={item}>{item}</li>)}</ul></article>)}</section>
+      <Panel title="Evidence required for impact reporting" subtitle="No verified outcome dataset is currently connected">
+        <ul className="ag-list">
+          <li>Defined site boundary, reporting period and ownership</li>
+          <li>Metered energy and water baseline plus intervention period</li>
+          <li>Verified grid emissions factor and calculation method</li>
+          <li>Crop yield, soil and biodiversity measurements where relevant</li>
+          <li>Uncertainty, data completeness and independent review</li>
+        </ul>
+      </Panel>
     </NeoAgroShell>
   );
 }
