@@ -30,7 +30,7 @@ def _configuration(environ: dict[str, str]) -> tuple[str, str, str, str]:
     if not endpoint or not client_id or not client_secret:
         raise NovaCoreIngestionError("nova_core_ingestion_not_configured")
 
-    if any(char in client_id + client_secret for char in "\\r\\n"):
+    if any(char in client_id + client_secret for char in "\r\n"):
         raise NovaCoreIngestionError("nova_core_ingestion_credentials_invalid")
     parsed = urlsplit(endpoint)
     if (
