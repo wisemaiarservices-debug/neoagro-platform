@@ -244,9 +244,9 @@ export function DigitalTwinView() {
         </div>
         <aside className="ag-twin-side">
           <Panel title="Example alert states" subtitle="Illustrative placeholders · no live alert feed">
-            <Alert icon={AlertTriangle} title="Panel S-18 offline" body="No output for 47 min / dispatch crew" tint="bad" />
-            <Alert icon={Droplets} title="Soil moisture low / Strawberry" body="Sensor S-21 at 38%, target 55%" tint="warn" />
-            <Alert icon={Wifi} title="Gateway packet loss" body="22% over 10 min, retry in progress" tint="warn" />
+            <Alert icon={AlertTriangle} title="No live sensor feed" body="Connect and verify a device gateway before showing field alarms." tint="warn" />
+            <Alert icon={Droplets} title="Soil-water status unavailable" body="Field capacity, root-zone depth and calibrated sensor data are required." tint="warn" />
+            <Alert icon={Wifi} title="Gateway not registered" body="No communications or packet-loss measurements are available." tint="warn" />
           </Panel>
           <Panel title="Asset summary" subtitle="Registry not connected">
             <div className="ag-list"><span>Solar panels <b>Not registered</b></span><span>Edge nodes <b>Not registered</b></span><span>Irrigation valves <b>Not registered</b></span><span>Weather stations <b>Not registered</b></span></div>
