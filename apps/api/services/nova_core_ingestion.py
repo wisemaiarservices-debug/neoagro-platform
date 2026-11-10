@@ -30,6 +30,8 @@ def _configuration(environ: dict[str, str]) -> tuple[str, str, str, str]:
     if not endpoint or not client_id or not client_secret:
         raise NovaCoreIngestionError("nova_core_ingestion_not_configured")
 
+    if any(char in client_id + client_secret for char in "\\r\\n"):
+        raise NovaCoreIngestionError("nova_core_ingestion_credentials_invalid")
     parsed = urlsplit(endpoint)
     if (
         parsed.scheme != "https"
@@ -38,10 +40,13 @@ def _configuration(environ: dict[str, str]) -> tuple[str, str, str, str]:
         or parsed.password is not None
         or parsed.query
         or parsed.fragment
-        or parsed.path.rstrip("/") != "/api/v1/observations"
+        or parsed.path != "/api/v1/observations"
     ):
         raise NovaCoreIngestionError("nova_core_ingestion_endpoint_invalid")
-    port = str(parsed.port or 443)
+    try:
+        port = str(parsed.port or 443)
+    except ValueError as exc:
+        raise NovaCoreIngestionError("nova_core_ingestion_endpoint_invalid") from exc
     path = parsed.path
     return parsed.hostname, port, path, client_id + "\n" + client_secret
 
