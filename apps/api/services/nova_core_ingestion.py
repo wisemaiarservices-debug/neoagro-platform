@@ -65,7 +65,14 @@ def submit_observation(
     config = _configuration(dict(os.environ if environ is None else environ))
     host, port, path, credential_pair = config
     client_id, client_secret = credential_pair.split("\n", 1)
-    body = json.dumps(payload, allow_nan=False, separators=(",", ":")).encode("utf-8")
+    if not isinstance(payload, dict):
+        raise NovaCoreIngestionError("nova_core_payload_invalid")
+    try:
+        body = json.dumps(payload, allow_nan=False, separators=(",", ":")).encode("utf-8")
+    except (TypeError, ValueError, UnicodeEncodeError) as exc:
+        raise NovaCoreIngestionError("nova_core_payload_invalid") from exc
+    if len(body) > 32_768:
+        raise NovaCoreIngestionError("nova_core_payload_too_large")
     connection = connection_factory(host, int(port), timeout=10)
     try:
         connection.request(
