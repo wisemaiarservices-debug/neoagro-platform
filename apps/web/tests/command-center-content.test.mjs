@@ -68,3 +68,15 @@ test('command center theme uses audited dark enterprise shell', () => {
     assert.ok(stylesSource.includes(className), `Missing CSS class: ${className}`);
   }
 });
+
+
+test('NOVA Core never receives a fabricated default operating state', () => {
+  assert.ok(novaCoreSource.includes('state?: NovaCoreState'), 'NOVA Core input must be explicitly supplied.');
+  assert.ok(novaCoreSource.includes('if (!state || !hasEligibleEvidence(state)) return fallbackInsight;'), 'Missing or ineligible evidence must fail closed.');
+  assert.ok(novaCoreSource.includes("'verified_field_observation' | 'attributed_provider_data'"), 'Evidence classification must be explicit.');
+  assert.ok(novaCoreSource.includes('source_ids: string[]'), 'Registered source identifiers must accompany measurements.');
+  assert.ok(novaCoreSource.includes('observed_at: string'), 'Measurements must be timestamped.');
+  assert.ok(!novaCoreSource.includes('const defaultState'), 'Synthetic defaults must not be posted to NOVA Core.');
+  assert.ok(novaCoreSource.includes('confidence: null'), 'Fallback recommendations must not imply calibrated confidence.');
+  assert.ok(novaCoreSource.includes('water_saved_m3: null'), 'Fallback impact quantities must remain unavailable.');
+});
