@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, timedelta, timezone
 
 from services.provider_observation import (
     ProviderObservationError,
@@ -62,8 +63,28 @@ class ProviderObservationMapperTests(unittest.TestCase):
                 **self.base(), "observed_at": "2026-11-10T12:00:00"
             })
 
+    def test_rejects_future_timestamp_beyond_core_tolerance(self):
+        future = (datetime.now(timezone.utc) + timedelta(minutes=6)).isoformat()
+        with self.assertRaisesRegex(ProviderObservationError, "future"):
+            build_provider_observation(**{**self.base(), "observed_at": future})
+
+    def test_rejects_units_outside_core_character_contract(self):
+        for unit in ("degC<script>", "unit\\n", "x" * 49):
+            with self.subTest(unit=unit), self.assertRaises(ProviderObservationError):
+                build_provider_observation(**{**self.base(), "unit": unit})
+
+    def test_rejects_oversized_identity_and_idempotency_fields(self):
+        for key, value in (
+            ("site_id", "s" * 121),
+            ("source_id", "s" * 121),
+            ("provider", "p" * 121),
+            ("idempotency_key", "k" * 201),
+        ):
+            with self.subTest(key=key), self.assertRaises(ProviderObservationError):
+                build_provider_observation(**{**self.base(), key: value})
+
     def test_rejects_unknown_or_duplicate_quality_flags(self):
-        for flags in (["invented_flag"], ["estimated", "estimated"]):
+        for flags in (["invented_flag"], ["estimated", "estimated"], ["estimated"] * 17):
             with self.subTest(flags=flags), self.assertRaises(ProviderObservationError):
                 build_provider_observation(**{**self.base(), "quality_flags": flags})
 
