@@ -35,7 +35,7 @@ class NasaPowerObservationTests(unittest.TestCase):
             site_id="registered-site-01",
             source_id="registered-nasa-power-source",
         )
-        self.assertEqual(len(observations), 5)
+        self.assertEqual(len(observations), 6)
         temperature = next(x for x in observations if x["metric"] == "weather.air_temperature_mean")
         self.assertEqual(temperature["value"], 21.4)
         self.assertEqual(temperature["observed_at"], "2026-11-10T00:00:00+00:00")
