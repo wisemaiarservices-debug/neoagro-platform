@@ -42,7 +42,7 @@ class ProviderObservationMapperTests(unittest.TestCase):
         for key in ("site_id", "source_id"):
             args = self.base()
             args.pop(key)
-            with self.subTest(key=key), self.assertRaises(ProviderObservationError):
+            with self.subTest(key=key), self.assertRaises(TypeError):
                 build_provider_observation(**args)
 
     def test_rejects_sensor_claims_in_provider_mapper(self):
