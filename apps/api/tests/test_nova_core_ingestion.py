@@ -3,8 +3,7 @@ import copy
 import unittest
 from pathlib import Path
 
-from services.nova_core_ingestion import NovaCoreIngestionError, submit_observation
-from services.provider_observation import build_provider_observation
+from services.nova_core_ingestion import NovaCoreIngestionError, submit_observation, submit_provider_observation
 
 
 class FakeResponse:
@@ -139,7 +138,7 @@ class NeoAgroIngestionTests(unittest.TestCase):
 
 
     def test_provider_mapper_output_passes_the_same_core_transport_contract(self):
-        payload = build_provider_observation(
+        result = submit_provider_observation(
             site_id="registered-site-01",
             source_id="registered-weather-source-01",
             metric="weather.air_temperature",
@@ -150,8 +149,9 @@ class NeoAgroIngestionTests(unittest.TestCase):
             acquisition_method="provider_api",
             idempotency_key="nasa-power:record-2026-11-10",
             source_record_ref="provider-record-2026-11-10",
+            environ=self.env,
+            connection_factory=FakeConnection,
         )
-        result = submit_observation(payload, environ=self.env, connection_factory=FakeConnection)
         sent = json.loads(FakeConnection.last.request_args[2].decode("utf-8"))
         self.assertTrue(result["accepted"])
         self.assertEqual(sent["module"], "neoagro")
