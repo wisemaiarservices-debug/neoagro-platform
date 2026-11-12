@@ -64,7 +64,14 @@ test('NeoAgro accepts partial finite measurements and preserves unknown fields',
 test('client-only evidence metadata is not sent to the strict Core SiteState API', () => {
   assert.ok(novaCoreSource.includes('function toCoreSiteState(state: NovaCoreState): CoreSiteState'));
   assert.ok(novaCoreSource.includes('const coreState = toCoreSiteState(state)'));
-  assert.ok(!novaCoreSource.includes('JSON.stringify(body)') || novaCoreSource.includes('body: JSON.stringify(body)'));
+  const mapperStart = novaCoreSource.indexOf('function toCoreSiteState(');
+  const mapperEnd = novaCoreSource.indexOf('\nasync function postJson', mapperStart);
+  assert.ok(mapperStart >= 0 && mapperEnd > mapperStart, 'Core payload mapper should be explicit.');
+  const mapper = novaCoreSource.slice(mapperStart, mapperEnd);
+  assert.ok(!mapper.includes('data_classification'));
+  assert.ok(!mapper.includes('source_ids'));
+  assert.ok(!mapper.includes('observed_at'));
+  assert.ok(mapper.includes('payload[field] = value'));
   assert.ok(novaCoreSource.includes('caller_supplied_unverified'));
   assert.ok(novaCoreSource.includes('extra=forbid'));
 });
