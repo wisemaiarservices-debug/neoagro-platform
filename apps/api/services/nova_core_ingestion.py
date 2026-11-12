@@ -14,6 +14,9 @@ from typing import Any, Callable
 from urllib.parse import urlsplit
 
 
+MAX_REQUEST_BYTES = 32_768
+
+
 class NovaCoreIngestionError(RuntimeError):
     """Safe transport error; never includes credentials or response headers."""
 
@@ -65,7 +68,14 @@ def submit_observation(
     config = _configuration(dict(os.environ if environ is None else environ))
     host, port, path, credential_pair = config
     client_id, client_secret = credential_pair.split("\n", 1)
-    body = json.dumps(payload, allow_nan=False, separators=(",", ":")).encode("utf-8")
+    if not isinstance(payload, dict):
+        raise NovaCoreIngestionError("nova_core_payload_invalid")
+    try:
+        body = json.dumps(payload, allow_nan=False, separators=(",", ":")).encode("utf-8")
+    except (TypeError, ValueError) as exc:
+        raise NovaCoreIngestionError("nova_core_payload_invalid") from exc
+    if len(body) > MAX_REQUEST_BYTES:
+        raise NovaCoreIngestionError("nova_core_payload_too_large")
     connection = connection_factory(host, int(port), timeout=10)
     try:
         connection.request(
