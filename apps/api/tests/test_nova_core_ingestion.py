@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from services.nova_core_ingestion import NovaCoreIngestionError, submit_observation
+from services.provider_observation import build_provider_observation
 
 
 class FakeResponse:
@@ -135,6 +136,43 @@ class NeoAgroIngestionTests(unittest.TestCase):
         with self.assertRaisesRegex(NovaCoreIngestionError, "invalid_site_id"):
             submit_observation(rejected, environ=self.env, connection_factory=FakeConnection)
 
+
+
+    def test_provider_mapper_output_passes_the_same_core_transport_contract(self):
+        payload = build_provider_observation(
+            site_id="registered-site-01",
+            source_id="registered-weather-source-01",
+            metric="weather.air_temperature",
+            value=24.5,
+            unit="degC",
+            observed_at="2026-11-10T12:00:00Z",
+            provider="NASA POWER",
+            acquisition_method="provider_api",
+            idempotency_key="nasa-power:record-2026-11-10",
+            source_record_ref="provider-record-2026-11-10",
+        )
+        result = submit_observation(payload, environ=self.env, connection_factory=FakeConnection)
+        sent = json.loads(FakeConnection.last.request_args[2].decode("utf-8"))
+        self.assertTrue(result["accepted"])
+        self.assertEqual(sent["module"], "neoagro")
+        self.assertEqual(sent["source_id"], "registered-weather-source-01")
+        self.assertEqual(sent["provenance"]["provider"], "NASA POWER")
+        self.assertEqual(sent["provenance"]["acquisition_method"], "provider_api")
+        self.assertNotIn("tenant_id", sent)
+
+    def test_ingestion_requires_explicit_opt_in(self):
+        env = dict(self.env, NOVA_CORE_INGESTION_ENABLED="false")
+        FakeConnection.last = None
+        with self.assertRaisesRegex(NovaCoreIngestionError, "ingestion_disabled"):
+            submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
+        self.assertIsNone(FakeConnection.last)
+
+    def test_oversized_upstream_response_fails_closed(self):
+        class OversizedResponseConnection(FakeConnection):
+            def getresponse(self):
+                return FakeResponse(201, b"x" * 16_385)
+        with self.assertRaisesRegex(NovaCoreIngestionError, "response_too_large"):
+            submit_observation(self.payload, environ=self.env, connection_factory=OversizedResponseConnection)
 
     def test_shared_nova_core_v1_contract_fixture_matrix(self):
         fixture_path = Path(__file__).parent / "fixtures" / "nova-core-observation-v1.json"
