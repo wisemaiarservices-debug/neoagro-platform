@@ -109,6 +109,8 @@ class NovaCoreIngestionError(RuntimeError):
 
 
 def _configuration(environ: dict[str, str]) -> tuple[str, str, str, str]:
+    if environ.get("NOVA_CORE_INGESTION_ENABLED", "").strip().lower() != "true":
+        raise NovaCoreIngestionError("nova_core_ingestion_disabled")
     endpoint = environ.get("NOVA_CORE_INGESTION_URL", "").strip()
     client_id = environ.get("NOVA_CORE_ACCESS_CLIENT_ID", "")
     client_secret = environ.get("NOVA_CORE_ACCESS_CLIENT_SECRET", "")
