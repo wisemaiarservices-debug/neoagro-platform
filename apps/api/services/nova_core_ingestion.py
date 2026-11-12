@@ -12,6 +12,8 @@ import os
 from typing import Any, Callable
 from urllib.parse import urlsplit
 
+from .provider_observation import build_provider_observation
+
 
 MAX_REQUEST_BYTES = 32_768
 
@@ -191,3 +193,18 @@ def submit_observation(
         raise NovaCoreIngestionError("nova_core_ingestion_unavailable") from exc
     finally:
         connection.close()
+
+
+def submit_provider_observation(
+    *,
+    environ: dict[str, str] | None = None,
+    connection_factory: Callable[..., Any] = http.client.HTTPSConnection,
+    **record: Any,
+) -> dict[str, Any]:
+    """Map one explicit provider record and submit it through the guarded transport.
+
+    Site/source IDs, source record reference and observation time must be supplied
+    by the trusted provider integration. NOVA Core derives tenant ownership.
+    """
+    payload = build_provider_observation(**record)
+    return submit_observation(payload, environ=environ, connection_factory=connection_factory)
