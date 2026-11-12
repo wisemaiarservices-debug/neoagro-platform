@@ -2,20 +2,20 @@
 
 ## Status
 
-This change adds a transport helper and unit tests only. It does **not** connect NeoAgro's browser UI to the ingestion service, create a public write endpoint, provision identities or source records, or claim that observations are being accepted in production.
+This change adds a bounded transport helper and contract-conformance tests only. It does **not** connect NeoAgro's browser UI to the ingestion service, create a public write endpoint, provision identities or source records, or claim that observations are being accepted in production.
 
 ## Trust boundary
 
 - Call `services.nova_core_ingestion.submit_observation` only from trusted backend code after the producer is authenticated and the site/source/asset identifiers have been resolved from an approved registry.
 - Never call it from a browser component or expose the Cloudflare Access service-token credentials through `NEXT_PUBLIC_*`, HTML, local storage, logs or API responses.
 - NOVA Core remains authoritative for Access JWT verification, service/module/source grants, payload validation, active site/source/asset ownership, idempotency, audit records and the server-assigned `unverified` status.
-- The helper has no FastAPI route and is not invoked by the current synthetic demo endpoints.
+- The helper has no FastAPI route and is not invoked by the current synthetic demo endpoints. It validates the NOVA Core v1 envelope locally; Core remains authoritative and derives `tenant_id` from registered site/source/asset ownership. The producer must not send a tenant ID.
 
 ## Required server environment
 
-Set these only in the protected runtime that will execute a trusted producer:
+Set these only in the protected runtime that will execute a trusted producer. Keep `NOVA_CORE_INGESTION_ENABLED=false` until Core's tenant-aware ingestion boundary, D1, Access and exact source grants have passed acceptance:
 
-- `NOVA_CORE_INGESTION_URL`: exact HTTPS URL ending in `/api/v1/observations`
+- `NOVA_CORE_INGESTION_URL`: exact HTTPS URL ending in `/api/v1/observations` on a dedicated Access-protected custom hostname; public `workers.dev` and preview URLs are disabled
 - `NOVA_CORE_ACCESS_CLIENT_ID`: Cloudflare Access service-token client ID
 - `NOVA_CORE_ACCESS_CLIENT_SECRET`: Cloudflare Access service-token secret
 
@@ -24,7 +24,7 @@ No credentials are included in this repository. Missing values fail closed. Redi
 ## Before enabling a producer
 
 1. Deploy the isolated NOVA Core ingestion Worker and protect its hostname with a Cloudflare Access Service Auth policy.
-2. Provision a D1 database, apply the reviewed migration and bind it as `DB`.
+2. Provision a D1 database, apply the ordered tenant-aware migrations 0001–0004 and bind it as `DB`.
 3. Register the real NeoAgro site, asset and source records. Do not use the illustrative demo site ID as a real site.
 4. Configure exact service → module → source grants for the NeoAgro producer.
 5. Store the Access service token in the server runtime secret store; do not put it in Vercel client/public variables.
