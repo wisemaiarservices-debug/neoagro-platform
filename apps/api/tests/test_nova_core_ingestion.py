@@ -76,6 +76,7 @@ class NovaCoreIngestionClientTests(unittest.TestCase):
     def test_core_v1_envelope_is_validated_before_network_request(self):
         invalid_payloads = (
             dict(self.payload, module="another-module"),
+            dict(self.payload, module=[]),
             dict(self.payload, metric="Invalid Metric"),
             dict(self.payload, unit=""),
             dict(self.payload, observed_at="2026-11-10T12:00:00"),
@@ -84,6 +85,7 @@ class NovaCoreIngestionClientTests(unittest.TestCase):
             dict(self.payload, idempotency_key=""),
             dict(self.payload, unexpected_field="not-accepted"),
             dict(self.payload, provenance={"provider": "test", "acquisition_method": "sensor", "secret": "no"}),
+            dict(self.payload, provenance={"provider": "test", "acquisition_method": []}),
             dict(self.payload, quality_flags=["unknown_flag"]),
         )
         for invalid in invalid_payloads:
