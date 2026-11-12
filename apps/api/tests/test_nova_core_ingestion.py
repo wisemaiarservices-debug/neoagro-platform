@@ -64,9 +64,9 @@ class NeoAgroIngestionTests(unittest.TestCase):
         result = submit_observation(self.payload, environ=self.env, connection_factory=FakeConnection)
         method, path, body, headers = FakeConnection.last.request_args
         self.assertEqual((method, path), ("POST", "/api/v1/observations"))
-        self.assertEqual(headers["CF-Access-Client-Id"], "grid-client-id")
-        self.assertEqual(headers["CF-Access-Client-Secret"], "grid-client-secret")
-        self.assertNotIn("grid-client-secret", body.decode())
+        self.assertEqual(headers["CF-Access-Client-Id"], "neoagro-client-id")
+        self.assertEqual(headers["CF-Access-Client-Secret"], "neoagro-client-secret")
+        self.assertNotIn("neoagro-client-secret", body.decode())
         self.assertEqual(result["verification_status"], "unverified")
         self.assertTrue(FakeConnection.last.closed)
 
@@ -127,7 +127,7 @@ class NeoAgroIngestionTests(unittest.TestCase):
         with self.assertRaises(NovaCoreIngestionError) as caught:
             submit_observation(self.payload, environ=self.env, connection_factory=RejectedConnection)
         self.assertEqual(caught.exception.status, 403)
-        self.assertNotIn("grid-client-secret", str(caught.exception))
+        self.assertNotIn("neoagro-client-secret", str(caught.exception))
 
     def test_matches_core_utf16_string_length_boundaries(self):
         accepted = dict(self.payload, site_id="😀" * 60)
