@@ -150,7 +150,14 @@ def _configuration(environ: dict[str, str]) -> tuple[str, int, str, str, str]:
         or parsed.path != "/api/v1/observations"
         or hostname not in allowed_hosts
         or any(hostname == suffix[1:] or hostname.endswith(suffix) for suffix in forbidden_suffixes)
-        or any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?", item) for item in allowed_hosts)
+        or any(
+            len(item) > 253
+            or not re.fullmatch(
+                r"(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))+",
+                item,
+            )
+            for item in allowed_hosts
+        )
     ):
         raise NovaCoreIngestionError("nova_core_ingestion_endpoint_invalid")
     return hostname, port, parsed.path, client_id, client_secret
