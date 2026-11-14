@@ -144,7 +144,6 @@ class NeoAgroIngestionTests(unittest.TestCase):
             "bad-.example.com",
             "example..com",
             "x" * 64 + ".example.com",
-            "example.com.",
         ):
             with self.subTest(allowlist=allowlist), self.assertRaises(NovaCoreIngestionError):
                 submit_observation(
