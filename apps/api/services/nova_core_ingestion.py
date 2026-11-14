@@ -120,9 +120,10 @@ def _configuration(environ: dict[str, str]) -> tuple[str, int, str, str, str]:
     if environ.get("NOVA_CORE_INGESTION_ENABLED", "").strip().lower() != "true":
         raise NovaCoreIngestionError("nova_core_ingestion_disabled")
     endpoint = environ.get("NOVA_CORE_INGESTION_URL", "").strip()
+    allowed_hosts_raw = environ.get("NOVA_CORE_INGESTION_ALLOWED_HOSTS", "")
     client_id = environ.get("NOVA_CORE_ACCESS_CLIENT_ID", "")
     client_secret = environ.get("NOVA_CORE_ACCESS_CLIENT_SECRET", "")
-    if not endpoint or not client_id or not client_secret:
+    if not endpoint or not allowed_hosts_raw or not client_id or not client_secret:
         raise NovaCoreIngestionError("nova_core_ingestion_not_configured")
     if any(char in client_id + client_secret for char in "\r\n"):
         raise NovaCoreIngestionError("nova_core_ingestion_credentials_invalid")
@@ -131,17 +132,28 @@ def _configuration(environ: dict[str, str]) -> tuple[str, int, str, str, str]:
         port = parsed.port or 443
     except ValueError as exc:
         raise NovaCoreIngestionError("nova_core_ingestion_endpoint_invalid") from exc
+    hostname = (parsed.hostname or "").lower().rstrip(".")
+    allowed_hosts = {
+        item.strip().lower().rstrip(".")
+        for item in allowed_hosts_raw.split(",")
+        if item.strip()
+    }
+    # Exact host matching only; public worker/preview domains are not trust anchors.
+    forbidden_suffixes = (".workers.dev", ".vercel.app", ".pages.dev")
     if (
         parsed.scheme != "https"
-        or not parsed.hostname
+        or not hostname
         or parsed.username is not None
         or parsed.password is not None
         or parsed.query
         or parsed.fragment
         or parsed.path != "/api/v1/observations"
+        or hostname not in allowed_hosts
+        or any(hostname == suffix[1:] or hostname.endswith(suffix) for suffix in forbidden_suffixes)
+        or any(not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]{0,251}[a-z0-9])?", item) for item in allowed_hosts)
     ):
         raise NovaCoreIngestionError("nova_core_ingestion_endpoint_invalid")
-    return parsed.hostname, port, parsed.path, client_id, client_secret
+    return hostname, port, parsed.path, client_id, client_secret
 
 
 def submit_observation(
