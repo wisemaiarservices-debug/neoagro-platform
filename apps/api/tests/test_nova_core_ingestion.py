@@ -137,6 +137,22 @@ class NeoAgroIngestionTests(unittest.TestCase):
             submit_observation(rejected, environ=self.env, connection_factory=FakeConnection)
 
 
+    def test_rejects_malformed_dns_allowlist_labels(self):
+        for allowlist in (
+            "bad..example.com",
+            "-bad.example.com",
+            "bad-.example.com",
+            "example..com",
+            "x" * 64 + ".example.com",
+            "example.com.",
+        ):
+            with self.subTest(allowlist=allowlist), self.assertRaises(NovaCoreIngestionError):
+                submit_observation(
+                    self.payload,
+                    environ=dict(self.env, NOVA_CORE_INGESTION_ALLOWED_HOSTS=allowlist),
+                    connection_factory=FakeConnection,
+                )
+
 
     def test_provider_mapper_output_passes_the_same_core_transport_contract(self):
         result = submit_provider_observation(
