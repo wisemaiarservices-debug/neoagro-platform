@@ -15,11 +15,12 @@ This change adds a bounded transport helper and contract-conformance tests only.
 
 Set these only in the protected runtime that will execute a trusted producer. Keep `NOVA_CORE_INGESTION_ENABLED=false` until Core's tenant-aware ingestion boundary, D1, Access and exact source grants have passed acceptance:
 
-- `NOVA_CORE_INGESTION_URL`: exact HTTPS URL ending in `/api/v1/observations` on a dedicated Access-protected custom hostname; public `workers.dev` and preview URLs are disabled
+- `NOVA_CORE_INGESTION_URL`: exact HTTPS URL ending in `/api/v1/observations` on a dedicated Access-protected custom hostname; public `workers.dev`, `pages.dev` and preview `vercel.app` hosts are rejected
+- `NOVA_CORE_INGESTION_ALLOWED_HOSTS`: comma-separated exact hostname allowlist (no schemes, paths, wildcards or suffix matching); the endpoint hostname must match one entry exactly
 - `NOVA_CORE_ACCESS_CLIENT_ID`: Cloudflare Access service-token client ID
 - `NOVA_CORE_ACCESS_CLIENT_SECRET`: Cloudflare Access service-token secret
 
-No credentials are included in this repository. Missing values fail closed. Redirects are not followed; the client connects directly to the configured HTTPS host and exact path. Timeouts, oversized responses, non-2xx responses and unconfirmed acceptance fail closed without echoing upstream response bodies or credentials.
+No credentials or production hostnames are included in this repository. Missing values fail closed. The transport rejects unlisted hosts and public worker/preview domains before opening a network connection; configure only the approved custom hostname after verifying its Cloudflare Access Service Auth policy. Redirects are not followed; the client connects directly to the configured HTTPS host and exact path. Timeouts, oversized responses, non-2xx responses and unconfirmed acceptance fail closed without echoing upstream response bodies or credentials.
 
 ## Before enabling a producer
 
