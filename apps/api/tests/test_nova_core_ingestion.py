@@ -43,6 +43,7 @@ class NeoAgroIngestionTests(unittest.TestCase):
         self.env = {
             "NOVA_CORE_INGESTION_ENABLED": "true",
             "NOVA_CORE_INGESTION_URL": "https://ingest.example.com/api/v1/observations",
+            "NOVA_CORE_INGESTION_ALLOWED_HOSTS": "ingest.example.com",
             "NOVA_CORE_ACCESS_CLIENT_ID": "neoagro-client-id",
             "NOVA_CORE_ACCESS_CLIENT_SECRET": "neoagro-client-secret",
         }
@@ -205,6 +206,32 @@ class NeoAgroIngestionTests(unittest.TestCase):
                 with self.assertRaises(NovaCoreIngestionError):
                     submit_observation(build_payload(case), environ=self.env, connection_factory=FakeConnection)
                 self.assertIsNone(FakeConnection.last)
+
+    def test_requires_exact_allowlisted_custom_hostname(self):
+        invalid_endpoints = (
+            "https://other.example.com/api/v1/observations",
+            "https://nova-core.workers.dev/api/v1/observations",
+            "https://preview.vercel.app/api/v1/observations",
+            "https://core.pages.dev/api/v1/observations",
+        )
+        for endpoint in invalid_endpoints:
+            with self.subTest(endpoint=endpoint), self.assertRaisesRegex(
+                NovaCoreIngestionError, "endpoint_invalid"
+            ):
+                submit_observation(
+                    self.payload,
+                    environ=dict(self.env, NOVA_CORE_INGESTION_URL=endpoint),
+                    connection_factory=FakeConnection,
+                )
+
+    def test_missing_or_malformed_host_allowlist_fails_closed(self):
+        for allowlist in ("", "*.example.com", "https://ingest.example.com", "bad host"):
+            with self.subTest(allowlist=allowlist), self.assertRaises(NovaCoreIngestionError):
+                submit_observation(
+                    self.payload,
+                    environ=dict(self.env, NOVA_CORE_INGESTION_ALLOWED_HOSTS=allowlist),
+                    connection_factory=FakeConnection,
+                )
 
 
 
