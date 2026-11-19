@@ -20,7 +20,7 @@ test('dashboard preserves Lovable NeoAgro command center modules', () => {
     'Sustainability',
     'Digital Twin',
     'Crop blocks and field zones',
-    'Solar production / today',
+    'Solar production / sample day',
     'Soil moisture',
     'Energy production forecast',
     'Water demand vs supply',
@@ -37,10 +37,10 @@ test('dashboard keeps main NOVA Core integration', () => {
   const requiredMarkers = [
     'getNovaCoreInsight',
     'nova.connected',
-    'NOVA Core AI v0',
-    'NOVA Core recommendation',
-    'main branch integration',
-    'fallback',
+    'NOVA Core response',
+    'NOVA Core response example',
+    'Not authenticated tenant telemetry or a live device connection',
+    'Local deterministic fallback',
   ];
 
   const novaSource = `${dashboardSource}\n${dashboardRouteSource}`;
