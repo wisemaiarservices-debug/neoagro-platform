@@ -47,3 +47,8 @@ Neohaven/06_DEVELOPMENT/neoagro-platform/neoagro-platform/neoagro-platform
 ```
 
 Do not move this app until after the July SolarHub submission.
+
+
+## Web runtime security baseline
+
+The App Router frontend now uses Next.js `16.4.6` with React and React DOM `19.3.1`, Node.js `>=20.9.0`, and a pnpm v10 lockfile. The pnpm override pins `source-map-js` to the patched `1.2.4` line and `react-is` to match React 19. CI installs with `pnpm install --frozen-lockfile`, runs the web regression tests, TypeScript check, production dependency audit, full dependency audit, and production build. On the validated PR head, both dependency audits reported no known vulnerabilities. This is source/CI evidence for the preview branch, not evidence that the production deployment has been updated.
