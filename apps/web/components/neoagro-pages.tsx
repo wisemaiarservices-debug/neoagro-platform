@@ -63,7 +63,7 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
         <div>
           <div className="ag-micro">Illustrative SolarHub scenario</div>
           <h2>{summary.scenario}</h2>
-          <p>{summary.site.name} is monitored across solar, crop health, water systems, yield risk, digital twin state, and operator-approved NOVA Core AI recommendations.</p>
+          <p>{summary.site.name} is an illustrative site fixture covering solar, crop, water, yield, and digital-twin workflows. No field devices are connected.</p>
           <div className="ag-chip-row">{summary.workflow.map((step) => <span key={step}>{step}</span>)}</div>
         </div>
         <div className="ag-hero-status">
