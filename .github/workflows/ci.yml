@@ -65,13 +65,8 @@ jobs:
 
   web-build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -80,18 +75,9 @@ jobs:
           node-version: '22'
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
-      - name: Regenerate pnpm lockfile
+      - name: Install locked web dependencies
         working-directory: apps/web
-        run: pnpm install --no-frozen-lockfile
-      - name: Persist regenerated lockfile
-        run: |
-          if ! git diff --quiet -- apps/web/pnpm-lock.yaml; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add apps/web/pnpm-lock.yaml
-            git commit -m "chore(neoagro): refresh patched web dependency lockfile"
-            git push origin "HEAD:${{ github.head_ref || github.ref_name }}"
-          fi
+        run: pnpm install --frozen-lockfile
       - name: Test web
         working-directory: apps/web
         run: pnpm test
@@ -101,6 +87,10 @@ jobs:
       - name: Audit production dependencies
         working-directory: apps/web
         run: pnpm audit --prod --audit-level high
+      - name: Report full dependency audit
+        working-directory: apps/web
+        continue-on-error: true
+        run: pnpm audit --audit-level high
       - name: Build web
         working-directory: apps/web
         run: pnpm run build
