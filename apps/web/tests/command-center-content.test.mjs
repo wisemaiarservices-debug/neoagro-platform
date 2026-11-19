@@ -25,7 +25,7 @@ test('dashboard preserves Lovable NeoAgro command center modules', () => {
     'Energy production forecast',
     'Water demand vs supply',
     'Carbon footprint / 12 month',
-    'Spatial view of panels, sensors, irrigation, weather, and field zones',
+    'Illustrative spatial layout with synthetic assets and sensor fixtures',
   ];
 
   for (const marker of requiredMarkers) {
