@@ -56,20 +56,20 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
     <NeoAgroShell>
       <PageHeader
         title="Operations Dashboard"
-        subtitle="Real Lovable NeoAgro source adapted into the NOVA Agriculture app with deterministic SolarHub data"
+        subtitle="Illustrative SolarHub scenario using deterministic sample data"
         actions={<><button className="ag-button ghost"><Calendar size={14} /> Today</button><button className="ag-button ghost"><Download size={14} /> Export</button></>}
       />
       <section className="ag-hero">
         <div>
-          <div className="ag-micro">SolarHub Demo Scenario</div>
+          <div className="ag-micro">Illustrative SolarHub scenario</div>
           <h2>{summary.scenario}</h2>
-          <p>{summary.site.name} is monitored across solar, crop health, water systems, yield risk, digital twin state, and operator-approved NOVA Core AI recommendations.</p>
+          <p>{summary.site.name} is an illustrative site fixture covering solar, crop, water, yield, and digital-twin workflows. No field devices are connected.</p>
           <div className="ag-chip-row">{summary.workflow.map((step) => <span key={step}>{step}</span>)}</div>
         </div>
         <div className="ag-hero-status">
-          <div className="ag-micro">NOVA Core AI v0</div>
-          <strong>{nova.connected ? 'connected' : 'fallback'}</strong>
-          <span>main branch integration</span>
+          <div className="ag-micro">NOVA Core response</div>
+          <strong>{nova.connected ? 'Public API response' : 'Local deterministic fallback'}</strong>
+          <span>Not authenticated tenant telemetry or a live device connection</span>
         </div>
       </section>
 
@@ -96,7 +96,7 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
       </section>
 
       <section className="ag-grid chart-row">
-        <Panel wide title="Solar production / today" subtitle="Live kW output vs forecast">
+        <Panel wide title="Solar production / sample day" subtitle="Illustrative output and forecast fixture">
           <ChartBox>
             <AreaChart data={solarProductionToday}>
               <CartesianGrid stroke="var(--ag-border)" vertical={false} />
@@ -128,7 +128,7 @@ export function DashboardView({ summary, nova }: { summary: DashboardSummary; no
         <Panel title="Soil moisture" subtitle="7-day depth profile">
           <ChartBox compact><LineChart data={soilMoisture}><CartesianGrid stroke="var(--ag-border)" vertical={false} /><XAxis dataKey="day" tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><YAxis tick={{ fill: 'var(--ag-muted)', fontSize: 11 }} tickLine={false} axisLine={false} /><Tooltip contentStyle={tooltipStyle} /><Line dataKey="surface" stroke="var(--ag-solar)" strokeWidth={2} dot={false} /><Line dataKey="root" stroke="var(--ag-water)" strokeWidth={2.5} dot={false} /><Line dataKey="deep" stroke="var(--ag-green)" strokeWidth={2} dot={false} /></LineChart></ChartBox>
         </Panel>
-        <Panel title="NOVA Core recommendation" subtitle={`AI v0 / ${nova.connected ? 'connected' : 'fallback'}`}>
+        <Panel title="NOVA Core response example" subtitle={`Illustrative response / ${nova.connected ? 'public API' : 'local fallback'}`}>
           <h3>{nova.recommendation.title}</h3>
           <p>{nova.recommendation.explanation}</p>
           <div className="ag-chip-row"><span>Confidence {Math.round((nova.recommendation.confidence ?? 0) * 100)}%</span><span>Operator approval required</span></div>
@@ -156,7 +156,7 @@ export function ForecastingView() {
 
   return (
     <NeoAgroShell>
-      <PageHeader title="Forecasting" subtitle="14-day predictive outlook for energy production, yield risk, and water demand" />
+      <PageHeader title="Forecasting" subtitle="Illustrative 14-day forecast fixtures · not a validated site forecast" />
       <section className="ag-grid three">
         <MetricCard label="Energy / 14 day total" value={`${(totalEnergy / 1000).toFixed(1)}`} unit=" MWh" delta="+5.8%" icon={Zap} tint="solar" />
         <MetricCard label="Yield / 14 day total" value={`${totalYield.toFixed(1)}`} unit=" tons" delta="+2.3%" icon={Wheat} />
@@ -180,7 +180,7 @@ export function ForecastingView() {
 export function RecommendationsView({ nova }: { nova: NovaCoreInsight }) {
   return (
     <NeoAgroShell>
-      <PageHeader title="AI Recommendations" subtitle="Continuous optimization across energy, crop, and water systems" actions={<button className="ag-button"><Sparkles size={14} /> Run analysis</button>} />
+      <PageHeader title="AI Recommendations" subtitle="Sample recommendations for operator review · no control action is executed" actions={<button className="ag-button"><Sparkles size={14} /> Run analysis</button>} />
       <section className="ag-grid four">{predictions.map((item) => <MetricCard key={item.label} label={item.label} value={item.value} delta={item.delta} positive={item.positive} icon={TrendingUp} />)}</section>
       <section className="ag-grid two">
         {[...aiRecommendations, {
@@ -190,7 +190,7 @@ export function RecommendationsView({ nova }: { nova: NovaCoreInsight }) {
           title: nova.recommendation.title,
           impact: nova.recommendation.explanation,
           confidence: nova.recommendation.confidence ?? 0.8,
-          eta: nova.connected ? 'Live API response' : 'Deterministic fallback',
+          eta: nova.connected ? 'Public API example' : 'Local deterministic fixture',
         }].map((item) => (
           <article key={item.id} className="ag-panel recommendation">
             <div className="ag-rec-head"><span className={`priority ${item.priority}`}>{item.priority}</span><span>{item.category}</span><b>{Math.round(item.confidence * 100)}%</b></div>
@@ -210,7 +210,7 @@ export function RecommendationsView({ nova }: { nova: NovaCoreInsight }) {
 export function SustainabilityView() {
   return (
     <NeoAgroShell>
-      <PageHeader title="Sustainability Reporting" subtitle="ESG performance, carbon reduction, water savings, and renewable energy ratio" />
+      <PageHeader title="Sustainability Scenario" subtitle="Illustrative ESG metrics · not independently measured or verified impact" />
       <section className="ag-grid four">
         <MetricCard label="Carbon offset YTD" value={`${sustainabilityScore.carbonOffset}`} unit=" t CO2" delta="+12.4%" icon={Leaf} />
         <MetricCard label="Water savings" value={`${sustainabilityScore.waterSaved}%`} delta="+3.2%" icon={Droplets} tint="water" />
@@ -233,7 +233,7 @@ export function SustainabilityView() {
 export function DigitalTwinView() {
   return (
     <NeoAgroShell>
-      <PageHeader title="Digital Twin" subtitle="Spatial view of panels, sensors, irrigation, weather, and field zones" actions={<span className="ag-live">Live / 248 sensors</span>} />
+      <PageHeader title="Digital Twin Scenario" subtitle="Illustrative spatial layout with synthetic assets and sensor fixtures" actions={<span className="ag-live">Demo / sample sensors</span>} />
       <section className="ag-grid twin-layout">
         <div className="ag-panel ag-twin-map">
           <svg className="ag-map-grid" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(180,220,198,.14)" /></pattern></defs><rect width="100%" height="100%" fill="url(#grid)" /></svg>
@@ -251,7 +251,7 @@ export function DigitalTwinView() {
           <Panel title="Asset summary" subtitle="Shared NOVA asset registry">
             <div className="ag-list"><span>Solar panels <b>4,820</b></span><span>Edge nodes <b>36</b></span><span>Irrigation valves <b>148</b></span><span>Weather stations <b>6</b></span></div>
           </Panel>
-          <Panel title="Twin sync" subtitle="Last full sync 4s ago"><div className="ag-score">99.94%</div></Panel>
+          <Panel title="Twin fixture status" subtitle="Static illustrative sample · no live synchronization"><div className="ag-score">Demo</div></Panel>
         </aside>
       </section>
     </NeoAgroShell>

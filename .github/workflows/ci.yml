@@ -67,18 +67,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Install web dependencies
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install locked web dependencies
         working-directory: apps/web
-        run: npm install
+        run: pnpm install --frozen-lockfile
       - name: Test web
         working-directory: apps/web
-        run: npm test
+        run: pnpm test
       - name: Typecheck web
         working-directory: apps/web
-        run: npm run typecheck
+        run: pnpm run typecheck
+      - name: Audit production dependencies
+        working-directory: apps/web
+        run: pnpm audit --prod --audit-level high
+      - name: Report full dependency audit
+        working-directory: apps/web
+        continue-on-error: true
+        run: pnpm audit --audit-level high
       - name: Build web
         working-directory: apps/web
-        run: npm run build
+        run: pnpm run build
