@@ -911,3 +911,27 @@ dd { margin: 0; color: var(--text); font-weight: 800; }
     min-height: 460px;
   }
 }
+
+
+/* Persistent provenance notice for deterministic, non-live product fixtures. */
+.ag-demo-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 16px 24px 0;
+  padding: 10px 14px;
+  border: 1px solid rgba(240, 176, 96, .42);
+  border-radius: 10px;
+  background: rgba(240, 176, 96, .09);
+  color: var(--ag-text, #e8f4ee);
+  font-size: 12px;
+}
+.ag-demo-notice strong {
+  color: var(--ag-solar, #f0b060);
+  letter-spacing: .08em;
+}
+.ag-demo-notice span { color: var(--ag-muted, #aab8b0); }
+@media (max-width: 640px) {
+  .ag-demo-notice { margin: 12px 12px 0; }
+}
