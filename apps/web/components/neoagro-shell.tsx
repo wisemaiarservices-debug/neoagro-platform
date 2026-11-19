@@ -39,16 +39,16 @@ export function NeoAgroShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         <div className="ag-status-card">
-          <div className="ag-micro"><Activity size={14} /> System status</div>
-          <strong>Operator-approved mode</strong>
-          <span>14 sites / 248 sensors online</span>
+          <div className="ag-micro"><Activity size={14} /> Demo environment</div>
+          <strong>Operator review workflow</strong>
+          <span>Sample site and sensor fixtures only</span>
         </div>
       </aside>
       <div className="ag-main">
         <header className="ag-topbar">
           <div>
             <div className="ag-micro">SITE</div>
-            <strong>Mesa Verde 01 / SolarHub Demo</strong>
+            <strong>SolarHub illustrative site</strong>
           </div>
           <div className="ag-topbar-actions">
             <span className="ag-search"><Search size={14} /> Search fields, sensors...</span>
@@ -56,7 +56,13 @@ export function NeoAgroShell({ children }: { children: ReactNode }) {
             <div className="ag-avatar">NA</div>
           </div>
         </header>
-        <main className="ag-content">{children}</main>
+        <main className="ag-content">
+          <div className="ag-demo-notice" role="status" aria-label="Demo data notice">
+            <strong>DEMO SCENARIO</strong>
+            <span>Synthetic and deterministic sample data · not live site telemetry · no field devices connected</span>
+          </div>
+          {children}
+        </main>
       </div>
     </div>
   );
