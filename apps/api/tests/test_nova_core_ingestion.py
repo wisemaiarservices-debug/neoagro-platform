@@ -115,6 +115,7 @@ class NeoAgroIngestionTests(unittest.TestCase):
             "https://nova-core.example/other",
             "https://nova-core.example/api/v1/observations?x=1",
             "https://nova-core.example:99999/api/v1/observations",
+            "https://ingest.example.com:8443/api/v1/observations",
         ):
             with self.subTest(endpoint=endpoint), self.assertRaises(NovaCoreIngestionError):
                 submit_observation(self.payload, environ=dict(self.env, NOVA_CORE_INGESTION_URL=endpoint),
@@ -238,6 +239,16 @@ class NeoAgroIngestionTests(unittest.TestCase):
                     environ=dict(self.env, NOVA_CORE_INGESTION_URL=endpoint),
                     connection_factory=FakeConnection,
                 )
+
+    def test_rejects_nonstandard_port_even_for_allowlisted_hostname(self):
+        FakeConnection.last = None
+        with self.assertRaisesRegex(NovaCoreIngestionError, "endpoint_invalid"):
+            submit_observation(
+                self.payload,
+                environ=dict(self.env, NOVA_CORE_INGESTION_URL="https://ingest.example.com:8443/api/v1/observations"),
+                connection_factory=FakeConnection,
+            )
+        self.assertIsNone(FakeConnection.last)
 
     def test_missing_or_malformed_host_allowlist_fails_closed(self):
         for allowlist in ("", "*.example.com", "https://ingest.example.com", "bad host"):
