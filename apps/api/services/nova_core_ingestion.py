@@ -148,6 +148,7 @@ def _configuration(environ: dict[str, str]) -> tuple[str, int, str, str, str]:
         or parsed.query
         or parsed.fragment
         or parsed.path != "/api/v1/observations"
+        or port != 443
         or hostname not in allowed_hosts
         or any(hostname == suffix[1:] or hostname.endswith(suffix) for suffix in forbidden_suffixes)
         or any(
