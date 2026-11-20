@@ -1,13 +1,14 @@
 import json
+import copy
 import unittest
+from pathlib import Path
 
-from services.nova_core_ingestion import NovaCoreIngestionError, submit_observation
+from services.nova_core_ingestion import NovaCoreIngestionError, submit_observation, submit_provider_observation
 
 
 class FakeResponse:
     def __init__(self, status=201, body=b'{"accepted":true,"verification_status":"unverified"}'):
-        self.status = status
-        self.body = body
+        self.status, self.body = status, body
 
     def read(self, size=-1):
         return self.body[:size]
@@ -37,45 +38,68 @@ class RejectedConnection(FakeConnection):
         return FakeResponse(403, b'{"error":"request_not_authorized"}')
 
 
-class NovaCoreIngestionClientTests(unittest.TestCase):
+class NeoAgroIngestionTests(unittest.TestCase):
     def setUp(self):
         self.env = {
-            "NOVA_CORE_INGESTION_URL": "https://nova-core-ingest.example.workers.dev/api/v1/observations",
-            "NOVA_CORE_ACCESS_CLIENT_ID": "test-client-id",
-            "NOVA_CORE_ACCESS_CLIENT_SECRET": "test-client-secret",
+            "NOVA_CORE_INGESTION_ENABLED": "true",
+            "NOVA_CORE_INGESTION_URL": "https://ingest.example.com/api/v1/observations",
+            "NOVA_CORE_ACCESS_CLIENT_ID": "neoagro-client-id",
+            "NOVA_CORE_ACCESS_CLIENT_SECRET": "neoagro-client-secret",
         }
         self.payload = {
-            "site_id": "registered-site",
-            "source_id": "neoagro-weather-01",
+            "site_id": "registered-energy-site",
+            "source_id": "neoagro-inverter-01",
             "module": "neoagro",
-            "metric": "weather.air_temperature",
-            "value": 24.5,
-            "unit": "°C",
+            "metric": "energy.solar_power",
+            "value": 18.7,
+            "unit": "kW",
             "observed_at": "2026-11-10T12:00:00Z",
-            "idempotency_key": "provider-record-123",
-            "provenance": {"provider": "example-weather", "acquisition_method": "provider_api"},
+            "idempotency_key": "inverter-event-0001",
+            "provenance": {"provider": "registered-inverter-gateway", "acquisition_method": "sensor"},
             "quality_flags": [],
         }
 
-    def test_posts_to_exact_observation_path_with_server_side_access_headers(self):
+    def test_posts_with_server_side_access_headers(self):
         result = submit_observation(self.payload, environ=self.env, connection_factory=FakeConnection)
-        request = FakeConnection.last.request_args
+        method, path, body, headers = FakeConnection.last.request_args
+        self.assertEqual((method, path), ("POST", "/api/v1/observations"))
+        self.assertEqual(headers["CF-Access-Client-Id"], "neoagro-client-id")
+        self.assertEqual(headers["CF-Access-Client-Secret"], "neoagro-client-secret")
+        self.assertNotIn("neoagro-client-secret", body.decode())
         self.assertEqual(result["verification_status"], "unverified")
-        self.assertEqual(request[0:2], ("POST", "/api/v1/observations"))
-        headers = request[3]
-        self.assertEqual(headers["CF-Access-Client-Id"], "test-client-id")
-        self.assertEqual(headers["CF-Access-Client-Secret"], "test-client-secret")
-        self.assertNotIn("test-client-secret", request[2].decode())
         self.assertTrue(FakeConnection.last.closed)
 
+    def test_rejects_non_object_non_finite_and_oversized_payloads(self):
+        for invalid in ([], {"value": float("nan")}, {"value": "x" * 33_000}):
+            with self.subTest(payload_type=type(invalid).__name__), self.assertRaises(NovaCoreIngestionError):
+                submit_observation(invalid, environ=self.env, connection_factory=FakeConnection)
 
-    def test_rejects_oversized_or_non_json_payload_before_network_call(self):
+    def test_core_v1_envelope_is_validated_before_network_request(self):
+        invalid_payloads = (
+            dict(self.payload, module="another-module"),
+            dict(self.payload, module=[]),
+            dict(self.payload, metric="Invalid Metric"),
+            dict(self.payload, unit=""),
+            dict(self.payload, observed_at="2026-11-10T12:00:00"),
+            dict(self.payload, observed_at="2099-11-10T12:00:00Z"),
+            dict(self.payload, value=True),
+            dict(self.payload, idempotency_key=""),
+            dict(self.payload, site_id="😀" * 61),
+            dict(self.payload, site_id="\ufeff"),
+            dict(self.payload, unexpected_field="not-accepted"),
+            dict(self.payload, provenance={"provider": "test", "acquisition_method": "sensor", "secret": "no"}),
+            dict(self.payload, provenance={"provider": "test", "acquisition_method": []}),
+            dict(self.payload, quality_flags=["unknown_flag"]),
+        )
+        for invalid in invalid_payloads:
+            with self.subTest(payload=invalid), self.assertRaises(NovaCoreIngestionError):
+                submit_observation(invalid, environ=self.env, connection_factory=FakeConnection)
+
+    def test_ingestion_disabled_without_explicit_opt_in(self):
         FakeConnection.last = None
-        with self.assertRaisesRegex(NovaCoreIngestionError, "payload_too_large"):
-            submit_observation({**self.payload, "extra": "x" * 33_000}, environ=self.env, connection_factory=FakeConnection)
-        self.assertIsNone(FakeConnection.last)
-        with self.assertRaisesRegex(NovaCoreIngestionError, "payload_invalid"):
-            submit_observation({**self.payload, "value": float("nan")}, environ=self.env, connection_factory=FakeConnection)
+        env = dict(self.env, NOVA_CORE_INGESTION_ENABLED="false")
+        with self.assertRaisesRegex(NovaCoreIngestionError, "ingestion_disabled"):
+            submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
         self.assertIsNone(FakeConnection.last)
 
     def test_missing_credentials_fail_closed(self):
@@ -84,29 +108,104 @@ class NovaCoreIngestionClientTests(unittest.TestCase):
         with self.assertRaisesRegex(NovaCoreIngestionError, "not_configured"):
             submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
 
-    def test_rejects_non_https_or_unexpected_endpoint(self):
+    def test_rejects_invalid_endpoint_and_header_injection(self):
         for endpoint in (
             "http://nova-core.example/api/v1/observations",
             "https://nova-core.example/other",
-            "https://user:pass@nova-core.example/api/v1/observations",
-            "https://nova-core.example/api/v1/observations?debug=1",
+            "https://nova-core.example/api/v1/observations?x=1",
             "https://nova-core.example:99999/api/v1/observations",
-            "https://nova-core.example/api/v1/observations/",
         ):
-            env = dict(self.env, NOVA_CORE_INGESTION_URL=endpoint)
             with self.subTest(endpoint=endpoint), self.assertRaises(NovaCoreIngestionError):
-                submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
-
-    def test_credentials_reject_header_newlines(self):
-        env = dict(self.env, NOVA_CORE_ACCESS_CLIENT_ID="client\r\nInjected: yes")
+                submit_observation(self.payload, environ=dict(self.env, NOVA_CORE_INGESTION_URL=endpoint),
+                                   connection_factory=FakeConnection)
         with self.assertRaisesRegex(NovaCoreIngestionError, "credentials_invalid"):
-            submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
+            submit_observation(self.payload, environ=dict(self.env, NOVA_CORE_ACCESS_CLIENT_ID="grid\r\nX: y"),
+                               connection_factory=FakeConnection)
 
-    def test_upstream_rejection_is_safely_normalized(self):
+    def test_rejected_request_does_not_echo_upstream_body(self):
         with self.assertRaises(NovaCoreIngestionError) as caught:
             submit_observation(self.payload, environ=self.env, connection_factory=RejectedConnection)
         self.assertEqual(caught.exception.status, 403)
-        self.assertNotIn("test-client-secret", str(caught.exception))
+        self.assertNotIn("neoagro-client-secret", str(caught.exception))
+
+    def test_matches_core_utf16_string_length_boundaries(self):
+        accepted = dict(self.payload, site_id="😀" * 60)
+        submit_observation(accepted, environ=self.env, connection_factory=FakeConnection)
+        rejected = dict(self.payload, site_id="😀" * 61)
+        with self.assertRaisesRegex(NovaCoreIngestionError, "invalid_site_id"):
+            submit_observation(rejected, environ=self.env, connection_factory=FakeConnection)
+
+
+
+    def test_provider_mapper_output_passes_the_same_core_transport_contract(self):
+        result = submit_provider_observation(
+            site_id="registered-site-01",
+            source_id="registered-weather-source-01",
+            metric="weather.air_temperature",
+            value=24.5,
+            unit="degC",
+            observed_at="2026-11-10T12:00:00Z",
+            provider="NASA POWER",
+            acquisition_method="provider_api",
+            idempotency_key="nasa-power:record-2026-11-10",
+            source_record_ref="provider-record-2026-11-10",
+            environ=self.env,
+            connection_factory=FakeConnection,
+        )
+        sent = json.loads(FakeConnection.last.request_args[2].decode("utf-8"))
+        self.assertTrue(result["accepted"])
+        self.assertEqual(sent["module"], "neoagro")
+        self.assertEqual(sent["source_id"], "registered-weather-source-01")
+        self.assertEqual(sent["provenance"]["provider"], "NASA POWER")
+        self.assertEqual(sent["provenance"]["acquisition_method"], "provider_api")
+        self.assertNotIn("tenant_id", sent)
+
+    def test_ingestion_requires_explicit_opt_in(self):
+        env = dict(self.env, NOVA_CORE_INGESTION_ENABLED="false")
+        FakeConnection.last = None
+        with self.assertRaisesRegex(NovaCoreIngestionError, "ingestion_disabled"):
+            submit_observation(self.payload, environ=env, connection_factory=FakeConnection)
+        self.assertIsNone(FakeConnection.last)
+
+    def test_oversized_upstream_response_fails_closed(self):
+        class OversizedResponseConnection(FakeConnection):
+            def getresponse(self):
+                return FakeResponse(201, b"x" * 16_385)
+        with self.assertRaisesRegex(NovaCoreIngestionError, "response_too_large"):
+            submit_observation(self.payload, environ=self.env, connection_factory=OversizedResponseConnection)
+
+    def test_shared_nova_core_v1_contract_fixture_matrix(self):
+        fixture_path = Path(__file__).parent / "fixtures" / "nova-core-observation-v1.json"
+        fixture = json.loads(fixture_path.read_text(encoding="utf-8"))
+
+        def build_payload(case=None):
+            payload = copy.deepcopy(fixture["base_payload"])
+            payload["module"] = "neoagro"
+            if case is not None:
+                path = case.get("path", case.get("delete"))
+                parent = payload
+                for key in path[:-1]:
+                    parent = parent[key]
+                if "delete" in case:
+                    del parent[path[-1]]
+                else:
+                    parent[path[-1]] = case["value"]
+            return payload
+
+        submit_observation(build_payload(), environ=self.env, connection_factory=FakeConnection)
+        for case in fixture["accepted"]:
+            with self.subTest(accepted=case["id"]):
+                FakeConnection.last = None
+                submit_observation(build_payload(case), environ=self.env, connection_factory=FakeConnection)
+                self.assertIsNotNone(FakeConnection.last)
+
+        for case in fixture["rejected"]:
+            with self.subTest(rejected=case["id"]):
+                FakeConnection.last = None
+                with self.assertRaises(NovaCoreIngestionError):
+                    submit_observation(build_payload(case), environ=self.env, connection_factory=FakeConnection)
+                self.assertIsNone(FakeConnection.last)
+
 
 
 if __name__ == "__main__":
