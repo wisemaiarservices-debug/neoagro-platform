@@ -16,7 +16,7 @@ This change adds a bounded transport helper and contract-conformance tests only.
 Set these only in the protected runtime that will execute a trusted producer. Keep `NOVA_CORE_INGESTION_ENABLED=false` until Core's tenant-aware ingestion boundary, D1, Access and exact source grants have passed acceptance:
 
 - `NOVA_CORE_INGESTION_URL`: exact HTTPS URL ending in `/api/v1/observations` on a dedicated Access-protected custom hostname; public `workers.dev`, `pages.dev` and preview `vercel.app` hosts are rejected
-- `NOVA_CORE_INGESTION_ALLOWED_HOSTS`: comma-separated exact hostname allowlist (no schemes, paths, wildcards or suffix matching); the endpoint hostname must match one entry exactly
+- `NOVA_CORE_INGESTION_ALLOWED_HOSTS`: comma-separated exact hostname allowlist (no schemes, paths, wildcards or suffix matching); the endpoint hostname must match one entry exactly and use port 443
 - `NOVA_CORE_ACCESS_CLIENT_ID`: Cloudflare Access service-token client ID
 - `NOVA_CORE_ACCESS_CLIENT_SECRET`: Cloudflare Access service-token secret
 
