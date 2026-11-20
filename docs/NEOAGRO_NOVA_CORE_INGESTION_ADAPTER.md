@@ -24,7 +24,7 @@ No credentials are included in this repository. Missing values fail closed. Redi
 ## Before enabling a producer
 
 1. Deploy the isolated NOVA Core ingestion Worker and protect its hostname with a Cloudflare Access Service Auth policy.
-2. Provision a D1 database, apply the ordered tenant-aware migrations 0001–0004 and bind it as `DB`.
+2. Provision the D1 database for the private tenant API and bind it as `DB`. Use NOVA Core's canonical `apps/api/migrations/` directory and apply every SQL migration present there in filename order for the reviewed Core release (the current set extends through `0041`; numbering gaps are intentional). Do not stop at `0004` or apply only the initial tenant tables. Review the complete migration set against the exact Worker revision before any live application.
 3. Register the real NeoAgro site, asset and source records. Do not use the illustrative demo site ID as a real site.
 4. Configure exact service → module → source grants for the NeoAgro producer.
 5. Store the Access service token in the server runtime secret store; do not put it in Vercel client/public variables.
